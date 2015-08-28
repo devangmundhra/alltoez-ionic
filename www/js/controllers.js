@@ -1,24 +1,36 @@
-angular.module('starter.controllers', [])
+angular.module('alltoez.controllers', [])
 
-.controller('DashCtrl', function($scope) {})
-
-.controller('ChatsCtrl', function($scope, Chats) {
+.controller('EventsCtrl', function($scope, Events) {
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
   // To listen for when this page is active (for example, to refresh data),
   // listen for the $ionicView.enter event:
   //
-  //$scope.$on('$ionicView.enter', function(e) {
-  //});
-
-  $scope.chats = Chats.all();
-  $scope.remove = function(chat) {
-    Chats.remove(chat);
+  var currentStart = 0;
+  $scope.$on('$ionicView.enter', function(e) {
+    console.log("EventsCtrl view active")
+  });
+  $scope.doRefresh = function() {
+    currentStart = 0;
+    Events.getEvents({start:currentStart, limit:20}, function(resp) {
+       $scope.events = resp.results;
+       currentStart += 20;
+       // Stop the ion-refresher from spinning
+       $scope.$broadcast('scroll.refreshComplete');
+     });
   };
+  $scope.events = [];
+  $scope.addItems = function() {
+    Events.getEvents({start:currentStart, limit:20}, function(resp) {
+      $scope.events = $scope.events.concat(resp.results);
+      currentStart += 20;
+      $scope.$broadcast('scroll.infiniteScrollComplete');
+    })
+ }
 })
 
-.controller('ChatDetailCtrl', function($scope, $stateParams, Chats) {
-  $scope.chat = Chats.get($stateParams.chatId);
+.controller('EventsDetailCtrl', function($scope, $stateParams, Events) {
+  $scope.event = Events.get({id: $stateParams.eventId});
 })
 
 .controller('AccountCtrl', function($scope) {

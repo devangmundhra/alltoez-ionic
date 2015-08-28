@@ -1,0 +1,26 @@
+<ion-view view-title="Events">
+  <ion-content ng-controller="EventsCtrl">
+    <ion-refresher
+      pulling-text="Pull to refresh..."
+      on-refresh="doRefresh()">
+    </ion-refresher>
+    <ion-list>
+      <div class="list card" ng-repeat="event in events track by $index" >
+        <a class="item item-text-wrap" href="#/tab/events/{{event.id}}">
+          <div class="item item-header">
+            <h2>{{ event.title }}</h2>
+            <p>{{event.venue.neighborhood}}, {{ event.venue.city }}</p>
+          </div>
+
+          <div class="item item-image">
+            <img ng-src="{{ event.image }}" style="width: 100%; height: 128px">
+          </div>
+        </a>
+        <a class="item item-icon-right" href="#">
+          <i class="icon ion-bookmark"></i>
+        </a>
+      </div>
+      <ion-infinite-scroll on-infinite="addItems()"></ion-infinite-scroll>
+    </ion-list>
+  </ion-content>
+</ion-view>
