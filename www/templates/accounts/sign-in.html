@@ -1,0 +1,27 @@
+<ion-view view-title="Sign-In">
+  <ion-content padding="true">
+    <div class="facebook-signin">
+      <label class="item">
+          <button class="button button-block button-positive" ng-click="fbLogin()">
+          Login with Facebook
+          </button>
+      </label>
+    </div>
+    <div class="list">
+      <label class="item item-input">
+        <input type="text" placeholder="Email" ng-model="user.email">
+      </label>
+      <label class="item item-input">
+        <input type="password" placeholder="Password" ng-model="user.password">
+      </label>
+    </div>
+    <div class="padding">
+      <button class="button button-block button-positive" ng-click="signIn(user)">
+        Sign-In
+      </button>
+      <p class="text-center">
+        <a ui-sref="tab.forgotpassword">Forgot password</a>
+      </p>
+    </div>
+  </ion-content>
+</ion-view>

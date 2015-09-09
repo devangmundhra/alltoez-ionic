@@ -1,0 +1,25 @@
+<ion-modal-view>
+  <ion-header-bar class="bar bar-header bar-positive">
+    <h1 class="title">Event filters</h1>
+    <button class="button button-clear button-primary" ng-click="applyFilters()">Done</button>
+    <button class="button button-clear button-secondary" ng-click="modal.hide()">Cancel</button>
+  </ion-header-bar>
+  <ion-content class="padding">
+    <div class="card item item-input location-filter">
+      <label class="item item-input item-stacked-label">
+        <span class="input-label"><i class="icon ion-location"></i> {{newFilter.selectedLocation.formatted_address || oldFilter.place }} </span>
+        <div><button class="button icon ion-android-locate" ng-click="this.updateModalLocation()"></button></div>
+        <div><input type="text" placeholder="Search location" g-places-autocomplete ng-model="newFilter.selectedLocation" /></div>
+      </label>
+    </div>
+
+    <div class="card item cost-filter">
+      <div>Cost: $ 0 - {{ newFilter.price || 33}}</div>
+      <div class="range">
+        <i class="icon ion-social-usd-outline"></i>
+        <input type="range" name="price" ng-model="newFilter.price" min="0" max="1000">
+        <i class="icon ion-social-usd"></i>
+      </div>
+    </div>
+  </ion-content>
+</ion-modal-view>

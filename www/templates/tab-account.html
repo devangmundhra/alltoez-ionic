@@ -1,9 +1,35 @@
 <ion-view view-title="Account">
   <ion-content>
-    <ion-list>
-    <ion-toggle  ng-model="settings.enableFriends">
-        Enable Friends
-    </ion-toggle>
-    </ion-list>
+    <div class="list">
+      <div class="item item-divider">
+        User details
+      </div>
+      <a class="item item-icon-left item-icon-right" ui-sref="tab.signin"
+          ng-hide="currentUser">
+        <i class="icon ion-person"></i>
+        Sign in
+        <i class="icon ion-log-in"></i>
+      </a>
+      <a class="item item-icon-left item-icon-right" ng-show="currentUser"
+          ui-sref="tab.user-detail({userId: currentUser.id})">
+        <i class="icon ion-person"></i>
+        {{ currentUser.first_name }} {{ currentUser.last_name}}
+        <i class="icon ion-ios-arrow-right"></i>
+      </a>
+      <a class="item item-icon-left item-icon-right" ui-sref="tab.bookmakred-events"
+          ng-show="currentUser">
+        <i class="icon ion-android-bookmark"></i>
+        Bookmarked events
+        <i class="icon ion-ios-arrow-right"></i>
+      </a>
+      <div class="item item-divider">
+        About Alltoez
+      </div>
+      <a class="item item-icon-left item-icon-right" ui-sref="tab.contact">
+        <i class="icon ion-chatbubbles"></i>
+        Contact us
+        <i class="icon ion-ios-arrow-right"></i>
+      </a>
+    </div>
   </ion-content>
 </ion-view>

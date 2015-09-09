@@ -6,31 +6,63 @@
 -->
 <ion-view view-title="Event Detail">
   <ion-content padding="true">
-    <img ng-src="{{event.image}}" style="width: 100%; height: 200px">
-    <h3>{{ event.title }}</h3>
-    <p class="event-address">
-        WHERE: {{ event.venue.name }}
-    </p>
-    <p class="event-neighborhood">
-        NEIGHBORHOOD: {{ event.venue.neighborhood }}
-    </p>
-    <div class="event-categories">
-    <span ng-repeat="category in event.category">
-      <a href="#">
-      <button class="button button-outline button-stable button-small">
-        {{ category.name }}
-      </button>
-      </a>
-    </span>
-  </div>
-  <br/>
-  <div class="event-description" markdown-to-html="event.description"><div>
-  <br/>
-  <div class="event-additional-info" ng-hide="event.additional_info">
+    <div class="list card">
+      <div class="item item-body">
+        <img ng-src="{{event.image}}" style="width: 100%; height: 200px"/>
+        <h3>{{ event.title }}</h3>
+        <p class="venue">
+            <span class="venue-name">{{ event.venue.name }}</span><br/>
+            <span class="venue-address">{{ event.venue.address }}</span>
+        </p>
+        <div class="event-categories">
+        <span ng-repeat="category in event.category">
+          <a ui-sref="tab.events({category: category.slug})">
+          <button class="button button-outline button-stable button-small">
+            {{ category.name }}
+          </button>
+          </a>
+        </span>
+      </div>
+      <br/>
+      {{ event.cost === 0 ? "Free" : "$" + event.cost}}, {{ event.min_age | format_event_age:event.max_age }}
+    </div>
+    <div class="event-open-hours item item-body">
       <dl>
-          <dt>TIPS</dt>
-          <dd markdown-to-html="event.additional_info"></dd>
+          <dt>WHEN</dt>
+          <dd>
+            <span>{{ event.start_date | date:"fullDate" }}</span>
+            <span ng-show="event.end_date && event.end_date != event.start_date"> to {{ event.end_date | date:"fullDate"}}</span>
+            <span ng-show="event.recurrence_detail">
+              {{event.recurrence_detail}}
+            </span>
+            <span ng-show="event.time_detail"
+            markdown-to-html="event.time_detail | format_event_datetime"></span>
+          </dd>
       </dl>
-  </div>
+    </div>
+    <div class="item item-text-wrap">
+      <div class="event-description" markdown-to-html="event.description"></div>
+      <br/>
+      <div class="event-additional-info" ng-show="event.additional_info">
+        <dl>
+            <dt>TIPS</dt>
+            <dd markdown-to-html="event.additional_info"></dd>
+        </dl>
+      </div>
+    </div>
+    <div class="item tabs tabs-secondary tabs-icon-left" ng-show="event.venue.facebook_url || event.url || event.venue.yelp_url">
+      <a class="tab-item" ng-href="{{event.venue.facebook_url}}" ng-show="event.venue.facebook_url">
+        <i class="icon ion-social-facebook"></i>
+        Facebook
+      </a>
+      <a class="tab-item" ng-href="{{event.url}}">
+        <i class="icon ion-link"></i>
+        Website
+      </a>
+      <a class="tab-item" ng-href="{{event.venue.yelp_url}}" ng-show="event.venue.yelp_url">
+        <i class="icon ion-ios-star-half"></i>
+        Yelp
+      </a>
+    </div>
   </ion-content>
 </ion-view>

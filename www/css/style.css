@@ -1,1 +1,13 @@
-/* Empty. Add your own CSS if you like */
+div.event-description {
+  p {
+    text-align: justify;
+  }
+}
+
+div.event a {
+  text-decoration: none;
+}
+
+i.bookmarked {
+  color: blue;
+}

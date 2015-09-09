@@ -5,8 +5,13 @@
 // 'alltoez.services' is found in services.js
 // 'alltoez.controllers' is found in controllers.js
 angular.module('alltoez', ['ionic', 'alltoez.controllers', 'alltoez.services',
-                            'ng-showdown'])
-.run(function($ionicPlatform) {
+'ng-showdown', 'google.places', 'ngOpenFB', 'ngCordova'])
+.constant('AUTH_EVENTS', {
+  notAuthenticated: 'auth-not-authenticated',
+  notAuthorized: 'auth-not-authorized'
+})
+.run(function($ionicPlatform, ngFB) {
+  ngFB.init({appId: '436853689787509'});
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -22,7 +27,7 @@ angular.module('alltoez', ['ionic', 'alltoez.controllers', 'alltoez.services',
   });
 })
 
-.config(function($stateProvider, $urlRouterProvider) {
+.config(function($stateProvider, $urlRouterProvider, $showdownProvider) {
 
   // Ionic uses AngularUI Router which uses the concept of states
   // Learn more here: https://github.com/angular-ui/ui-router
@@ -31,7 +36,7 @@ angular.module('alltoez', ['ionic', 'alltoez.controllers', 'alltoez.services',
   $stateProvider
 
   // setup an abstract state for the tabs directive
-    .state('tab', {
+  .state('tab', {
     url: '/tab',
     abstract: true,
     templateUrl: 'templates/tabs.html'
@@ -40,24 +45,24 @@ angular.module('alltoez', ['ionic', 'alltoez.controllers', 'alltoez.services',
   // Each tab has its own nav history stack:
 
   .state('tab.events', {
-      url: '/events',
-      views: {
-        'tab-events': {
-          templateUrl: 'templates/tab-events.html',
-          controller: 'EventsCtrl'
-        }
+    url: '/events?category&location&min_age&max_age&max_cost',
+    views: {
+      'tab-events': {
+        templateUrl: 'templates/tab-events.html',
+        controller: 'EventsCtrl'
       }
-    })
-    .state('tab.event-detail', {
-      url: '/events/:eventId',
-      views: {
-        'tab-events': {
-          templateUrl: 'templates/event-detail.html',
-          controller: 'EventsDetailCtrl'
-        }
+    }
+  })
+  .state('tab.event-detail', {
+    url: '/events/:eventId',
+    views: {
+      'tab-events': {
+        templateUrl: 'templates/event-detail.html',
+        controller: 'EventsDetailCtrl'
       }
-    })
-
+    }
+  })
+  // Account management
   .state('tab.account', {
     url: '/account',
     views: {
@@ -66,9 +71,39 @@ angular.module('alltoez', ['ionic', 'alltoez.controllers', 'alltoez.services',
         controller: 'AccountCtrl'
       }
     }
+  })
+  .state('tab.signin', {
+    url: '/account/sign-in',
+    views: {
+      'tab-account': {
+        templateUrl: 'templates/accounts/sign-in.html',
+        controller: 'UserCtrl'
+      },
+    }
+  })
+  .state('tab.user-detail', {
+    url: '/account/user/:userId',
+    views: {
+      'tab-account': {
+        template: '<p>Incomplete</p>',
+        controller: 'UserCtrl'
+      }
+    }
+  })
+  .state('tab.forgotpassword', {
+    url: '/account/forgot-password',
+    views: {
+      'tab-account': {
+        templateUrl: 'templates/accounts/forgot-password.html',
+        controller: 'UserCtrl'
+      }
+    }
   });
 
   // if none of the above states are matched, use this as the fallback
   $urlRouterProvider.otherwise('/tab/events');
 
+  // Set config option for markdown
+  // Tables for event time detail
+  $showdownProvider.setOption("tables", true);
 });
