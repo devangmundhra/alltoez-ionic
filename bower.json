@@ -5,7 +5,7 @@
     "ionic": "driftyco/ionic-bower#1.1.0"
   },
   "dependencies": {
-    "angular-google-places-autocomplete": "~0.2.7",
+    "ion-autocomplete": "~0.3.0",
     "ng-showdown": "~1.0.0",
     "ngCordova": "~0.1.20-alpha",
     "openfb": "~0.5.0"

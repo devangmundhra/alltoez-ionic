@@ -1,4 +1,4 @@
-<ion-modal-view>
+<ion-modal-view cache-view="false">
   <ion-header-bar class="bar bar-header bar-positive">
     <h1 class="title">Event filters</h1>
     <button class="button button-clear button-primary" ng-click="applyFilters()">Done</button>
@@ -6,11 +6,18 @@
   </ion-header-bar>
   <ion-content class="padding">
     <div class="card item item-input location-filter">
-      <label class="item item-input item-stacked-label">
-        <span class="input-label"><i class="icon ion-location"></i> {{newFilter.selectedLocation.formatted_address || oldFilter.place }} </span>
-        <div><button class="button icon ion-android-locate" ng-click="this.updateModalLocation()"></button></div>
-        <div><input type="text" placeholder="Search location" g-places-autocomplete ng-model="newFilter.selectedLocation" /></div>
-      </label>
+      <div class="row">
+        <div class="col col-75">
+          <span><i class="icon ion-location"></i>
+            {{newFilter.selectedLocation.formatted_address || oldFilter.place | limitTo: 30 }}
+          </span>
+          <input ion-autocomplete placeholder="Search location" item-view-value-key="formatted_address" select-items-label="Select a place"
+          selected-items-label="Selected place" autocomplete="off" ng-model="newFilter.selectedLocation"
+          type="text" readonly="readonly" class="ion-autocomplete" items-method="placesAutocomplete(query)"
+          loading-icon="ripple" />
+        </div>
+        <div class="col"><button class="button button-positive icon ion-android-locate" ng-click="this.updateModalLocation()"></button></div>
+      </div>
     </div>
 
     <div class="card item cost-filter">

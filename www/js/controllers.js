@@ -20,7 +20,7 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
 })
 .controller('EventsCtrl', function($scope, $state, $stateParams, Events, Bookmark,
                                    $ionicModal, $ionicPopup, $http, DataStore,
-                                   $cordovaGeolocation, $ionicPlatform) {
+                                   $cordovaGeolocation, $ionicPlatform, $q) {
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
   // To listen for when this page is active (for example, to refresh data),
@@ -94,7 +94,6 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
   };
 
   function getCurLocation(success, error) {
-    console.log("In getCurLocation");
     var posOptions = {timeout: 10000, enableHighAccuracy: false};
     $ionicPlatform.ready(function() {
       $cordovaGeolocation
@@ -173,22 +172,19 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
    $scope.oldFilter = {
      "place" : DataStore.get('place')
    };
-   console.log("Modal new filter " + angular.toJson($scope.newFilter));
-   
+
    $scope.modal = modal;
 
    $scope.updateModalLocation = function() {
-     console.log("In modal update location");
      getCurLocation(function(position) {
-       console.log("Position " + position)
        reverseGeocode(position, function(results, status) {
          if (status == google.maps.GeocoderStatus.OK) {
-             if (results[1]) {
-               $scope.newFilter.selectedLocation = results[1];
-               console.log(results[1]);
-             } else {
-               alert("Unable to get a place for this coordinates");
-             }
+           if (results[0]) {
+             $scope.newFilter.selectedLocation = results[0];
+             $scope.$apply();
+           } else {
+             alert("Unable to get a place for this coordinates");
+           }
          } else {
            alert("Unable to get a place for this coordinates");
          };
@@ -197,6 +193,26 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
        alert("Error in getting location: " + err);
      });
    };
+
+   $scope.placesAutocomplete = function(query) {
+     if (!query || query.length < 3) {
+       return;
+     }
+     var req = {};
+     var d = $q.defer();
+
+     req.address = query;
+     var geocoder = new google.maps.Geocoder();
+     geocoder.geocode(req, function(results, status) {
+       if (status == google.maps.GeocoderStatus.OK) {
+         d.resolve(results);
+       } else {
+         d.reject();
+         alert("Unable to get a place for this coordinates");
+       }
+     });
+    return d.promise;
+  };
  });
 
  $scope.filterOptions = function() {
@@ -260,15 +276,6 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
      $scope.unauthBookmark();
    }
  };
-
-  $scope.$on('modal.shown', function() {
-    $scope.newFilter = {
-      "price": DataStore.get('max_cost')
-    };
-  });
-  $scope.$on('$destroy', function() {
-    $scope.modal.remove();
-  });
 })
 
 .controller('EventsDetailCtrl', function($scope, $stateParams, Events) {
