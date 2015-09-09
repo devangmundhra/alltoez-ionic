@@ -16,7 +16,10 @@
           type="text" readonly="readonly" class="ion-autocomplete" items-method="placesAutocomplete(query)"
           loading-icon="ripple" />
         </div>
-        <div class="col"><button class="button button-positive icon ion-android-locate" ng-click="this.updateModalLocation()"></button></div>
+        <div class="col">
+          <button ng-hide="newFilter.waitingForCurLocation" class="button button-positive icon ion-android-locate" ng-click="this.updateModalLocation()"></button>
+          <button class="button button-clear " ng-show="newFilter.waitingForCurLocation"><ion-spinner  icon="ripple" class="spinner-positive"></ion-spinner></button>
+        </div>
       </div>
     </div>
 

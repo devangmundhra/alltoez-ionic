@@ -20,7 +20,8 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
 })
 .controller('EventsCtrl', function($scope, $state, $stateParams, Events, Bookmark,
                                    $ionicModal, $ionicPopup, $http, DataStore,
-                                   $cordovaGeolocation, $ionicPlatform, $q) {
+                                   $cordovaGeolocation, $ionicPlatform, $q,
+                                 $ionicLoading) {
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
   // To listen for when this page is active (for example, to refresh data),
@@ -134,6 +135,7 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
   $scope.$on('$ionicView.enter', function(e) {});
 
   $scope.doRefresh = function() {
+    $ionicLoading.show();
     currentStart = 0;
     $scope.noMoreItemsAvailable = false;
     var params = {start:currentStart, limit:20};
@@ -146,6 +148,7 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
 
       // Stop the ion-refresher from spinning
       $scope.$broadcast('scroll.refreshComplete');
+      $ionicLoading.hide();
     });
   };
 
@@ -167,7 +170,8 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
    animation: 'slide-in-up'
  }).then(function(modal) {
    $scope.newFilter = {
-     "price": DataStore.get('max_cost')
+     "price": DataStore.get('max_cost'),
+     "waitingForCurLocation" : false
    };
    $scope.oldFilter = {
      "place" : DataStore.get('place')
@@ -176,9 +180,11 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
    $scope.modal = modal;
 
    $scope.updateModalLocation = function() {
+     $scope.newFilter.waitingForCurLocation = true;
      getCurLocation(function(position) {
        reverseGeocode(position, function(results, status) {
          if (status == google.maps.GeocoderStatus.OK) {
+           $scope.newFilter.waitingForCurLocation = false;
            if (results[0]) {
              $scope.newFilter.selectedLocation = results[0];
              $scope.$apply();
@@ -188,6 +194,7 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
          } else {
            alert("Unable to get a place for this coordinates");
          };
+
        })
      }, function(err) {
        alert("Error in getting location: " + err);

@@ -10,6 +10,9 @@ angular.module('alltoez', ['ionic', 'alltoez.controllers', 'alltoez.services',
   notAuthenticated: 'auth-not-authenticated',
   notAuthorized: 'auth-not-authorized'
 })
+.constant('$ionicLoadingConfig', {
+  template: '<ion-spinner icon="spiral" class="spinner-energized"></ion-spinner>'
+})
 .run(function($ionicPlatform, ngFB) {
   ngFB.init({appId: '436853689787509'});
   $ionicPlatform.ready(function() {
