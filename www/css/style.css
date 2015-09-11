@@ -11,3 +11,7 @@ div.event a {
 i.bookmarked {
   color: blue;
 }
+
+form div.alert {
+  color: red;
+}

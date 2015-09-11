@@ -52,7 +52,7 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
   var dsDefaults = {
       place: 'San Francisco',
       latitude: 37.7833,
-      longitude: 122.4167,
+      longitude: -122.4167,
       radius: 40,
       max_cost: 200
     };
@@ -139,7 +139,7 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
     currentStart = 0;
     $scope.noMoreItemsAvailable = false;
     var params = {start:currentStart, limit:20};
-    Events.getEvents(angular.extend(params, $scope.filterParams.api), function(resp) {
+    Events.getEvents(angular.extend(params, $scope.filterParams.api)).$promise.then(function(resp) {
       if (!resp.next) {
         $scope.noMoreItemsAvailable = true;
       }
@@ -147,6 +147,11 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
       currentStart += 20;
 
       // Stop the ion-refresher from spinning
+      $scope.$broadcast('scroll.refreshComplete');
+      $ionicLoading.hide();
+    }, function(err){
+      // Stop the ion-refresher from spinning
+      $scope.noMoreItemsAvailable = true;
       $scope.$broadcast('scroll.refreshComplete');
       $ionicLoading.hide();
     });
@@ -289,20 +294,93 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
   $scope.event = Events.get({id: $stateParams.eventId});
 })
 
-.controller('AccountCtrl', function($scope) {
+.controller('AccountCtrl', function($scope, $cordovaEmailComposer) {
   $scope.settings = {};
+
+  $scope.contactEmail = function() {
+    $ionicPlatform.ready(function() {
+      $cordovaEmailComposer.isAvailable().then(function() {
+        var email = {
+          to: ['hi@alltoez.com'],
+          subject: 'Feedback on Alltoez',
+          body: '',
+          isHtml: true
+        };
+
+       $cordovaEmailComposer.open(email).then(null, function () {
+         // user cancelled email
+       });
+      }, function () {
+        console.error("Email not available");
+      });
+    });
+  };
 })
 
-.controller('UserCtrl', function($scope, $state, ngFB,
-                                    Signin, Facebook, AuthService) {
+.controller('UserCtrl', function($scope, $state, ngFB, Signup,
+                                 Login, Facebook, AuthService,
+                               $ionicPlatform, $cordovaToast, $ionicLoading) {
   $scope.$on('$ionicView.enter', function(e) {
     console.log("UserCtrl view active")
   });
-  $scope.signIn = function(user) {
-    console.log('Sign-In', user);
-    $state.go('tab.events');
+
+  function showToastMsg(message) {
+    console.log(message);
+    $ionicPlatform.ready(function() {
+      $cordovaToast.showShortTop(message);
+    });
   };
+
+  $scope.signUp = function(user) {
+    $ionicLoading.show();
+    console.log('Sign-Up', user);
+    Signup.save(user).$promise.then(function(response){
+      console.log("Response from Alltoez");
+      AuthService.login(response.key);
+      $state.go('tab.events');
+      $ionicLoading.hide();
+    }, function(err) {
+      $ionicLoading.hide();
+      user = err.data;
+      var errStr = "Error signing in " + err.statusText + "\n";
+      if (err.data.username) {
+        errStr += "email: " + err.data.username + "\n";
+      }
+      if (err.data.password) {
+        errStr += "password: " + err.data.password + "\n";
+      }
+      if (err.data.non_field_errors) {
+        errStr += err.data.non_field_errors + "\n";
+      }
+      showToastMsg(errStr);
+    });
+  };
+
+  $scope.logIn = function(user) {
+    $ionicLoading.show();
+    Login.save(user).$promise.then(function(response){
+      console.log("Response from Alltoez");
+      AuthService.login(response.key);
+      $state.go('tab.events');
+      $ionicLoading.hide();
+    }, function(err) {
+      $ionicLoading.hide();
+      var errStr = "Error signing in " + err.statusText + "\n";
+      if (err.data.username) {
+        errStr += "email: " + err.data.username + "\n";
+      }
+      if (err.data.password) {
+        errStr += "password: " + err.data.password + "\n";
+      }
+      if (err.data.non_field_errors) {
+        errStr += err.data.non_field_errors + "\n";
+      }
+      showToastMsg(errStr);
+    });
+  };
+
   $scope.fbLogin = function () {
+    $ionicLoading.show();
     ngFB.login({scope: 'email, public_profile, user_friends'}).then(
       function (response) {
         if (response.status === 'connected') {
@@ -311,12 +389,26 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
           .$promise.then(function(response) {
              console.log("Response from Alltoez");
              AuthService.login(response.key);
+             $state.go('tab.events');
+             $ionicLoading.hide();
            });
         } else {
-          alert('Facebook login failed');
+          $ionicLoading.hide();
+          showToastMsg('Facebook login failed');
           AuthService.logout();
         }
-      });
+      }
+    );
+  };
+
+  $scope.signOut = function() {
+    Logout.save().$promise.then(function(response) {
+      AuthService.logout();
+      $state.go('tab.account');
+    }, function(err) {
+      showToastMsg('Error logging out');
+      AuthService.logout();
+    });
   };
 })
 

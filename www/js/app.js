@@ -88,7 +88,7 @@ angular.module('alltoez', ['ionic', 'alltoez.controllers', 'alltoez.services',
     url: '/account/user/:userId',
     views: {
       'tab-account': {
-        template: '<p>Incomplete</p>',
+        template: 'templates/accounts/user-detail.html',
         controller: 'UserCtrl'
       }
     }
@@ -101,7 +101,16 @@ angular.module('alltoez', ['ionic', 'alltoez.controllers', 'alltoez.services',
         controller: 'UserCtrl'
       }
     }
-  });
+  })
+.state('tab.bookmakred-events', {
+      url: '/account/bookmarked-events',
+      views: {
+        'tab-account': {
+          templateUrl: 'templates/events/bookmarked-events.html',
+          controller: 'UserCtrl'
+        }
+      }
+    });
 
   // if none of the above states are matched, use this as the fallback
   $urlRouterProvider.otherwise('/tab/events');

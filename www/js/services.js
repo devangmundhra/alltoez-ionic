@@ -17,9 +17,20 @@ angular.module('alltoez.services', ['ngResource'])
     baseApiUrl+'users/:id/?format=json', {id: "@id"},
     {'me': {method: 'GET', url: baseApiUrl+'users/me/?format=json'}}
   );
-}).factory('Signin', function($resource, baseApiUrl) {
+})
+.factory('Login', function($resource, baseApiUrl) {
   return $resource(
-    baseApiUrl+'signin/?format=json'
+    baseApiUrl+'login/?format=json'
+  );
+})
+.factory('Logout', function($resource, baseApiUrl) {
+  return $resource(
+    baseApiUrl+'logout/?format=json'
+  );
+})
+.factory('Signup', function($resource, baseApiUrl) {
+  return $resource(
+    baseApiUrl+'signup/?format=json'
   );
 })
 .factory('Facebook', function($resource, baseApiUrl) {
