@@ -64,12 +64,12 @@ $ionicHistory) {
   function loadDataStore() {
     var shouldGetCurLoc = false;
     for (key in dsDefaults) {
-      if (!DataStore.get(key)) {
+      if (!DataStore.get(key) || typeof DataStore.get(key) === "undefined" || DataStore.get(key) === "undefined") {
         shouldGetCurLoc = true;
         DataStore.set(key, dsDefaults[key]);
-        console.log(dsDefaults[key])
       }
     }
+
     if (shouldGetCurLoc) {
       getCurLocation(function(position) {
         reverseGeocode(position, function(results, status) {
