@@ -3,6 +3,15 @@ div.event-description {
     text-align: justify;
   }
 }
+div.filter-text span {
+  background-color: #fafafa;
+  border: 1px solid #ccc;
+  border-radius: .25em;
+  padding: .15em .4em;
+  white-space: nowrap;
+  line-height: 1.85em;
+  font-size: .9em;
+}
 
 div.event a {
   text-decoration: none;

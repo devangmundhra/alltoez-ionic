@@ -76,7 +76,7 @@ angular.module('alltoez', ['ionic', 'alltoez.controllers', 'alltoez.services',
     }
   })
   .state('tab.signin', {
-    url: '/account/sign-in',
+    url: '/sign-in',
     views: {
       'tab-account': {
         templateUrl: 'templates/accounts/sign-in.html',
@@ -85,16 +85,16 @@ angular.module('alltoez', ['ionic', 'alltoez.controllers', 'alltoez.services',
     }
   })
   .state('tab.user-detail', {
-    url: '/account/user/:userId',
+    url: '/user/:userId',
     views: {
       'tab-account': {
-        template: 'templates/accounts/user-detail.html',
+        templateUrl: 'templates/accounts/user-detail.html',
         controller: 'UserCtrl'
-      }
+      },
     }
   })
   .state('tab.forgotpassword', {
-    url: '/account/forgot-password',
+    url: '/forgot-password',
     views: {
       'tab-account': {
         templateUrl: 'templates/accounts/forgot-password.html',
@@ -102,15 +102,15 @@ angular.module('alltoez', ['ionic', 'alltoez.controllers', 'alltoez.services',
       }
     }
   })
-.state('tab.bookmakred-events', {
-      url: '/account/bookmarked-events',
-      views: {
-        'tab-account': {
-          templateUrl: 'templates/events/bookmarked-events.html',
-          controller: 'UserCtrl'
-        }
+  .state('tab.bookmakred-events', {
+    url: '/bookmarked-events',
+    views: {
+      'tab-account': {
+        templateUrl: 'templates/events/bookmarked-events.html',
+        controller: 'UserCtrl'
       }
-    });
+    }
+  });
 
   // if none of the above states are matched, use this as the fallback
   $urlRouterProvider.otherwise('/tab/events');

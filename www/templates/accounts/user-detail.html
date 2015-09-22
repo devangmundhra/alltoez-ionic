@@ -1,47 +1,23 @@
-<ion-view view-title="Events" ng-controller="UserCtrl">
+<ion-view ng-controller="UserCtrl">
+  <ion-nav-title>{{currentUser.first_name}}'s Profile</ion-nav-title>
   <ion-nav-buttons side="secondary">
-     <button class="button button-clear icon ion-levels" ng-click="signOut()">
+     <button class="button button-clear button-assertive" ng-click="signOut()">
        Sign Out
      </button>
    </ion-nav-buttons>
-   <ion-header-bar class="bar bar-subheader filter-options padding"
-                   ng-click="filterOptions()">
-    <div class="filter-text">
-      <span ng-repeat="(filterKey, filterValue) in filterParams.ui"
-      ng-model="filterParams.lastRefreshTime">
-        {{ filterKey }}{{ filterValue }}
-      </span>
-    </div>
-   </ion-header-bar>
-  <ion-content class="has-subheader">
-    <ion-refresher
-      pulling-text="Pull to refresh..."
-      on-refresh="doRefresh()">
-    </ion-refresher>
-    <ion-list>
-      <div class="list card event" ng-repeat="event in events track by $index">
-        <div class="item item-header item-divider item-icon-right">
-          <a ui-sref="tab.event-detail({eventId: event.id})">
-            <h2>{{ event.title }}</h2>
-            <p>{{event.venue.neighborhood}}, {{ event.venue.city }}</p>
-          </a>
-          <a class="tab-item" href="#" ng-click="bookmark(event)">
-            <i class="icon ion-android-bookmark" ng-class="{bookmarked: event.bookmark}"></i>
-          </a>
+  <ion-content padding="true">
+    <div class="list card">
+      <h2 class="item item-icon-left"><i class="icon ion-person"></i>{{currentUser.profile.first_name}} {{currentUser.profile.last_name}}</h2>
+      <span class="item item-icon-left"><i class="icon ion-at"></i>{{currentUser.email}}</span>
+      <span class="item item-icon-left" ng-if="currentUser.profile.city || currentUser.profile.state"><i class="icon ion-home"></i>{{currentUser.profile.city}}, {{currentUser.profile.state}}<span ng-if="currentUser.profile.zipcode">, {{currentUser.profile.zipcode}}</span></span>
+      <div class="list" ng-if="currentUser.children.length">
+        <div class="item item-divider">
+          Children
         </div>
-
-        <div class="item item-image">
-          <a ui-sref="tab.event-detail({eventId: event.id})">
-            <img ng-src="{{ event.thumbnail_384_256 }}" style="width: 100%; height: 128px">
-          </a>
-        </div>
-        <div class="item item-divider item-wordwrap">
-          <a class="tab-item" ui-sref="tab.event-detail({eventId: event.id})">
-              {{ event.cost === 0 ? "Free" : "$" + event.cost}}, {{ event.min_age | format_event_age:event.max_age }}
-          </a>
+        <div class="item item-text-wrap" ng-repeat="child in currentUser.children track by $index">
+          <strong>{{child.name}}</strong> {{ child.gender | child_gender_to_string }}, {{ child.age }} years old
         </div>
       </div>
-      <ion-infinite-scroll ng-if="!noMoreItemsAvailable" on-infinite="addItems()"></ion-infinite-scroll>
-    </ion-list>
+    </div>
   </ion-content>
 </ion-view>

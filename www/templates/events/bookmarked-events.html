@@ -1,14 +1,11 @@
 <ion-view view-title="Bookmarked Events" cache-view="false" ng-controller="UserCtrl">
   <ion-content>
     <ion-list>
-      <div class="list card event" ng-repeat="event in events track by $index">
+      <div class="list card event" ng-repeat="event in currentUser.bookmarked_events track by $index">
         <div class="item item-header item-divider item-icon-right">
           <a ui-sref="tab.event-detail({eventId: event.id})">
             <h2>{{ event.title }}</h2>
             <p>{{event.venue.neighborhood}}, {{ event.venue.city }}</p>
-          </a>
-          <a class="tab-item" href="#" ng-click="bookmark(event)">
-            <i class="icon ion-android-bookmark" ng-class="{bookmarked: event.bookmark}"></i>
           </a>
         </div>
 
@@ -23,7 +20,6 @@
           </a>
         </div>
       </div>
-      <ion-infinite-scroll ng-if="!noMoreItemsAvailable" on-infinite="addItems()"></ion-infinite-scroll>
     </ion-list>
   </ion-content>
 </ion-view>

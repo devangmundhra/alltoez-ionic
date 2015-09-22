@@ -1,5 +1,6 @@
 angular.module('alltoez.controllers', ['ngOpenFB'])
-.controller('AlltoezCtrl', function($scope, $stateParams, AuthService, Users) {
+.controller('AlltoezCtrl', function($scope, $stateParams, AuthService, Users,
+$ionicHistory) {
   $scope.currentUser = null;
   $scope.isAuthenticated = AuthService.isAuthenticated;
 
@@ -7,21 +8,24 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
     $scope.currentUser = user;
   };
   $scope.$watch(function () {
-    return AuthService.isAuthenticated }, function (newVal, oldVal) {
-      if (typeof newVal !== 'undefined') {
+    return AuthService.isAuthenticated() }, function (newVal, oldVal) {
+      if (newVal === true) {
         Users.me().$promise.then(function(user) {
           $scope.setCurrentUser(user);
+        }, function(err) {
+          AuthService.logout();
         });
       }
       else {
         $scope.setCurrentUser(null);
       }
+      $ionicHistory.clearCache();
     });
 })
 .controller('EventsCtrl', function($scope, $state, $stateParams, Events, Bookmark,
                                    $ionicModal, $ionicPopup, $http, DataStore,
                                    $cordovaGeolocation, $ionicPlatform, $q,
-                                 $ionicLoading) {
+                                 $ionicLoading, $ionicHistory) {
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
   // To listen for when this page is active (for example, to refresh data),
@@ -257,7 +261,7 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
    });
    authPopup.then(function(res) {
      if (res) {
-       $state.go('tab.account');
+       $state.transitionTo('tab.account', {}, {reload: true});
      } else {
        console.log('Not willing to sign in');
      }
@@ -317,11 +321,11 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
   };
 })
 
-.controller('UserCtrl', function($scope, $state, ngFB, Signup,
-                                 Login, Facebook, AuthService,
+.controller('UserCtrl', function($scope, $state, ngFB, Signup, $ionicHistory,
+                                 Login, Facebook, AuthService, Logout,
                                $ionicPlatform, $cordovaToast, $ionicLoading) {
   $scope.$on('$ionicView.enter', function(e) {
-    console.log("UserCtrl view active")
+    console.log("UserCtrl view active");
   });
 
   function showToastMsg(message) {
@@ -337,7 +341,7 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
     Signup.save(user).$promise.then(function(response){
       console.log("Response from Alltoez");
       AuthService.login(response.key);
-      $state.go('tab.events');
+      $state.transitionTo('tab.events', {}, {reload: true});
       $ionicLoading.hide();
     }, function(err) {
       $ionicLoading.hide();
@@ -361,7 +365,8 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
     Login.save(user).$promise.then(function(response){
       console.log("Response from Alltoez");
       AuthService.login(response.key);
-      $state.go('tab.events');
+      $state.transitionTo('tab.events', {}, {reload: true});
+      $ionicHistory.clearHistory();
       $ionicLoading.hide();
     }, function(err) {
       $ionicLoading.hide();
@@ -389,7 +394,8 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
           .$promise.then(function(response) {
              console.log("Response from Alltoez");
              AuthService.login(response.key);
-             $state.go('tab.events');
+             $state.transitionTo('tab.events', {}, {reload: true});
+             $ionicHistory.clearHistory();
              $ionicLoading.hide();
            });
         } else {
@@ -403,11 +409,12 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
 
   $scope.signOut = function() {
     Logout.save().$promise.then(function(response) {
+      $state.transitionTo('tab.account', {}, {reload: true});
+      $ionicHistory.clearHistory();
       AuthService.logout();
-      $state.go('tab.account');
+      $scope.setCurrentUser(null);
     }, function(err) {
       showToastMsg('Error logging out');
-      AuthService.logout();
     });
   };
 })
@@ -452,6 +459,24 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
     }
     else { // max_age != 100
       return max_age + " yo and below"
+    }
+  }
+})
+.filter('child_gender_to_string', function() {
+  return function(value) {
+    if (value === 0) {
+      return "boy";
+    } else {
+      return "girl";
+    }
+  }
+})
+.filter('adult_gender_to_string', function() {
+  return function(value) {
+    if (value === 0) {
+      return "male";
+    } else {
+      return "female";
     }
   }
 });
