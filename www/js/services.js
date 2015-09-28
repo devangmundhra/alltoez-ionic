@@ -1,5 +1,5 @@
 angular.module('alltoez.services', ['ngResource'])
-.constant("baseApiUrl", "http://localhost:8000/api/v1/")
+.constant("baseApiUrl", AppSettings.baseApiUrl)
 .factory('Events', function($resource, baseApiUrl) {
   return $resource(
     baseApiUrl+'events/:id/?format=json',

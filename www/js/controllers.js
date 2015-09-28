@@ -1,6 +1,6 @@
 angular.module('alltoez.controllers', ['ngOpenFB'])
 .controller('AlltoezCtrl', function($scope, $stateParams, AuthService, Users,
-$ionicHistory) {
+                                    $ionicHistory, $ionicUser) {
   $scope.currentUser = null;
   $scope.isAuthenticated = AuthService.isAuthenticated;
 
@@ -12,11 +12,23 @@ $ionicHistory) {
       if (newVal === true) {
         Users.me().$promise.then(function(user) {
           $scope.setCurrentUser(user);
+          $ionicUser.identify({
+            user_id: user.pk,
+            email: user.email
+          });
         }, function(err) {
           AuthService.logout();
+          $ionicUser.identify({
+            // Generate GUID
+            user_id: $ionicUser.generateGUID(),
+          });
         });
       }
       else {
+        $ionicUser.identify({
+          // Generate GUID
+          user_id: $ionicUser.generateGUID(),
+        });
         $scope.setCurrentUser(null);
       }
       $ionicHistory.clearCache();
@@ -110,8 +122,8 @@ $ionicHistory) {
   function setDataStoreFromNewAddress(selectedLocation) {
     var center = selectedLocation.geometry.location;
     DataStore.set('place', selectedLocation.formatted_address);
-    DataStore.set('longitude', center.K);
-    DataStore.set('latitude', center.G);
+    DataStore.set('longitude', center.lng());
+    DataStore.set('latitude', center.lat());
   };
 
   updateFilterUI = function () {
@@ -238,8 +250,8 @@ $ionicHistory) {
  $scope.applyFilters = function() {
    if ($scope.newFilter.selectedLocation) {
      var center = $scope.newFilter.selectedLocation.geometry.location;
-     // Find events within 20 miles range
-     $scope.filterParams.api['location'] = center.G + "," + center.K + "," + 20;
+     // Find events within 20 miles range- lng + lat + miles
+     $scope.filterParams.api['location'] = center.lng() + "," + center.lat() + "," + 20;
      setDataStoreFromNewAddress($scope.newFilter.selectedLocation);
    }
 

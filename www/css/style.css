@@ -3,6 +3,11 @@ div.event-description {
     text-align: justify;
   }
 }
+
+div.filter-text div {
+  display: inline;
+}
+
 div.filter-text span {
   background-color: #fafafa;
   border: 1px solid #ccc;

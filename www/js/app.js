@@ -4,7 +4,7 @@
 // the 2nd parameter is an array of 'requires'
 // 'alltoez.services' is found in services.js
 // 'alltoez.controllers' is found in controllers.js
-angular.module('alltoez', ['ionic', 'alltoez.controllers', 'alltoez.services',
+angular.module('alltoez', ['ionic','ionic.service.core', 'alltoez.controllers', 'alltoez.services',
 'ng-showdown', 'ngOpenFB', 'ngCordova', 'ion-autocomplete'])
 .constant('AUTH_EVENTS', {
   notAuthenticated: 'auth-not-authenticated',

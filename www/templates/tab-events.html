@@ -6,10 +6,10 @@
    <ion-header-bar class="bar bar-subheader filter-options padding"
                    ng-click="filterOptions()">
     <div class="filter-text">
-      <span ng-repeat="(filterKey, filterValue) in filterParams.ui"
+      <div ng-repeat="(filterKey, filterValue) in filterParams.ui"
       ng-model="filterParams.lastRefreshTime">
-        {{ filterKey }}{{ filterValue }}
-      </span>
+        <span>{{ filterKey }}{{ filterValue }}</span>
+      </div>
     </div>
    </ion-header-bar>
   <ion-content class="has-subheader">
