@@ -17,6 +17,9 @@
       pulling-text="Pull to refresh..."
       on-refresh="doRefresh()">
     </ion-refresher>
+    <div class="spinner">
+      <ion-spinner ng-if="fetchingEvents && !events.length"></ion-spinner>
+    </div>
     <ion-list ng-show="events.length">
       <div class="list card event" ng-repeat="event in events track by $index">
         <div class="item item-header item-divider item-icon-right">
@@ -36,13 +39,13 @@
         </div>
         <div class="item item-divider item-wordwrap">
           <a class="tab-item" ui-sref="tab.event-detail({eventId: event.id})">
-              {{ event.cost === 0 ? "Free" : "$" + event.cost}}, {{ event.min_age | format_event_age:event.max_age }}
+              <span class="event-basic-info">{{ event.cost === 0 ? "Free" : "$" + event.cost}}, {{ event.min_age | format_event_age:event.max_age }}</span>
           </a>
         </div>
       </div>
       <ion-infinite-scroll ng-if="!noMoreItemsAvailable" on-infinite="addItems()"></ion-infinite-scroll>
     </ion-list>
-    <div class="list card padding" ng-hide="events.length">
+    <div class="list card padding" ng-if="!fetchingEvents" ng-hide="events.length">
       <h3>No events found for the criterias you have specified</h3>
     </div>
   </ion-content>

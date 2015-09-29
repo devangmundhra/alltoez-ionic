@@ -2,7 +2,7 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
 .controller('AlltoezCtrl', function($scope, $stateParams, AuthService, Users,
                                     $ionicHistory, $ionicUser) {
   $scope.currentUser = null;
-  $scope.isAuthenticated = AuthService.isAuthenticated;
+  $scope.isAuthenticated = AuthService.isAuthenticated();
 
   $scope.setCurrentUser = function (user) {
     $scope.currentUser = user;
@@ -44,7 +44,7 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
   // listen for the $ionicView.enter event:
   //
   // Initialize variables
-  var currentStart = 0;
+  var currentOffset = 0;
   $scope.selectedLocation = null;
 
   // Filter settings
@@ -63,6 +63,7 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
     floor: 0
   };
   $scope.noMoreItemsAvailable = false;
+  $scope.fetchingEvents = true;
 
   //create datastore with default values
   var dsDefaults = {
@@ -97,7 +98,7 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
           };
         })
       }, function(err) {
-        alert("Error in getting location: " + err);
+        alert("Error in getting location: " + JSON.stringify(err));
       });
     }
   }
@@ -111,7 +112,7 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
   };
 
   function getCurLocation(success, error) {
-    var posOptions = {timeout: 10000, enableHighAccuracy: false};
+    var posOptions = {timeout: 2*60*1000, enableHighAccuracy: false};
     $ionicPlatform.ready(function() {
       $cordovaGeolocation
       .getCurrentPosition(posOptions)
@@ -150,39 +151,54 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
 
   $scope.$on('$ionicView.enter', function(e) {});
 
-  $scope.doRefresh = function() {
-    $ionicLoading.show();
-    currentStart = 0;
-    $scope.noMoreItemsAvailable = false;
-    var params = {start:currentStart, limit:20};
-    Events.getEvents(angular.extend(params, $scope.filterParams.api)).$promise.then(function(resp) {
+  function getEvents(params, success, failure) {
+    $scope.fetchingEvents = true;
+    Events.getEvents(angular.extend(params, $scope.filterParams.api)).$promise
+    .then(function(resp) {
       if (!resp.next) {
         $scope.noMoreItemsAvailable = true;
       }
-      $scope.events = resp.results;
-      currentStart += 20;
-
-      // Stop the ion-refresher from spinning
-      $scope.$broadcast('scroll.refreshComplete');
-      $ionicLoading.hide();
-    }, function(err){
-      // Stop the ion-refresher from spinning
+      success(resp);
+      $scope.fetchingEvents = false;
+    },
+    function(err) {
       $scope.noMoreItemsAvailable = true;
-      $scope.$broadcast('scroll.refreshComplete');
-      $ionicLoading.hide();
+      failure(err);
+      $scope.fetchingEvents = false;
     });
   };
 
+  $scope.doRefresh = function() {
+    $ionicLoading.show();
+    currentOffset = 0;
+    $scope.noMoreItemsAvailable = false;
+    var params = {offset:currentOffset, limit:20};
+    getEvents(params,
+      function(resp) {
+        $scope.events = resp.results;
+        currentOffset += 20;
+
+        // Stop the ion-refresher from spinning
+        $scope.$broadcast('scroll.refreshComplete');
+        $ionicLoading.hide();
+      },
+      function(err) {
+        // Stop the ion-refresher from spinning
+        $scope.$broadcast('scroll.refreshComplete');
+        $ionicLoading.hide();
+      });
+  };
+
   $scope.addItems = function() {
-    var params = {start:currentStart, limit:20};
-    Events.getEvents(angular.extend(params, $scope.filterParams.api), function(resp) {
-      if (!resp.next) {
-        $scope.noMoreItemsAvailable = true;
-      }
-      $scope.events = $scope.events.concat(resp.results);
-      currentStart += 20;
-      $scope.$broadcast('scroll.infiniteScrollComplete');
-    })
+    var params = {offset:currentOffset, limit:20};
+    getEvents(params,
+      function(resp) {
+        $scope.events = $scope.events.concat(resp.results);
+        currentOffset += 20;
+        $scope.$broadcast('scroll.infiniteScrollComplete');
+      },
+      function(err) {}
+    );
  };
 
  // Create a modal for event filters
@@ -218,7 +234,7 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
 
        })
      }, function(err) {
-       alert("Error in getting location: " + err);
+       alert("Error in getting location: " + JSON.stringify(err));
      });
    };
 
