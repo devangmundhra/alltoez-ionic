@@ -1,6 +1,6 @@
 angular.module('alltoez.controllers', ['ngOpenFB'])
 .controller('AlltoezCtrl', function($scope, $stateParams, AuthService, Users,
-                                    $ionicHistory, $ionicUser) {
+                                    $ionicHistory) {
   $scope.currentUser = null;
   $scope.isAuthenticated = AuthService.isAuthenticated();
 
@@ -9,29 +9,23 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
   };
   $scope.$watch(function () {
     return AuthService.isAuthenticated() }, function (newVal, oldVal) {
+      var ioUser = Ionic.User.current();
       if (newVal === true) {
         Users.me().$promise.then(function(user) {
           $scope.setCurrentUser(user);
-          $ionicUser.identify({
-            user_id: user.pk,
-            email: user.email
-          });
+          ioUser.id = user.pk;
+          ioUser.email = user.email;
         }, function(err) {
           AuthService.logout();
-          $ionicUser.identify({
-            // Generate GUID
-            user_id: $ionicUser.generateGUID(),
-          });
+          ioUser.id = Ionic.User.anonymousId();
         });
       }
       else {
-        $ionicUser.identify({
-          // Generate GUID
-          user_id: $ionicUser.generateGUID(),
-        });
+        ioUser.id = Ionic.User.anonymousId();
         $scope.setCurrentUser(null);
       }
       $ionicHistory.clearCache();
+      ioUser.save();
     });
 })
 .controller('EventsCtrl', function($scope, $state, $stateParams, Events, Bookmark,

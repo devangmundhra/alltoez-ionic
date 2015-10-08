@@ -15,6 +15,7 @@ angular.module('alltoez', ['ionic','ionic.service.core', 'alltoez.controllers', 
 })
 .run(function($ionicPlatform, ngFB) {
   ngFB.init({appId: '436853689787509'});
+  Ionic.io();
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
