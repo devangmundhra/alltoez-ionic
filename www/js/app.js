@@ -76,6 +76,15 @@ angular.module('alltoez', ['ionic','ionic.service.core', 'alltoez.controllers', 
       }
     }
   })
+  .state('tab.update-profile', {
+    url: '/update_profile/:userId',
+    views: {
+      'tab-account': {
+        templateUrl: 'templates/accounts/update-profile.html',
+        controller: 'ProfileUpdateCtrl'
+      },
+    }
+  })
   .state('tab.signin', {
     url: '/sign-in',
     views: {

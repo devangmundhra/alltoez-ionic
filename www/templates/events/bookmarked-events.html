@@ -1,7 +1,7 @@
 <ion-view view-title="Bookmarked Events" cache-view="false" ng-controller="UserCtrl">
   <ion-content>
     <ion-list>
-      <div class="list card event" ng-repeat="event in currentUser.bookmarked_events track by $index">
+      <div class="list card event" ng-repeat="event in bookmarked_events track by $index">
         <div class="item item-header item-divider item-icon-right">
           <a ui-sref="tab.event-detail({eventId: event.id})">
             <h2>{{ event.title }}</h2>

@@ -15,7 +15,10 @@ angular.module('alltoez.services', ['ngResource'])
 .factory('Users', function($resource, baseApiUrl) {
   return $resource(
     baseApiUrl+'users/:id/?format=json', {id: "@id"},
-    {'me': {method: 'GET', url: baseApiUrl+'users/me/?format=json'}}
+    {'me': {method: 'GET', url: baseApiUrl+'users/me/?format=json'},
+     'update': {method: 'PUT', url: baseApiUrl+'users/:id/?format=json'},
+     'bookmarked': {method: 'GET', url: baseApiUrl+'users/:id/bookmarked/?format=json', isArray:true},
+     'done': {method: 'GET', url: baseApiUrl+'users/:id/done/?format=json', isArray:true}}
   );
 })
 .factory('Login', function($resource, baseApiUrl) {
@@ -37,6 +40,14 @@ angular.module('alltoez.services', ['ngResource'])
   return $resource(
     baseApiUrl+'facebook/?format=json', {},
     {'login': {method: 'POST'}}
+  );
+})
+.factory('Child', function($resource, baseApiUrl) {
+  return $resource(
+    baseApiUrl+'child/:id/?format=json', {id: "@id"},
+    {
+      'update': {method: 'PUT', url: baseApiUrl+'child/:id/?format=json'},
+    }
   );
 })
 .service('DataStore', function($q, $http) {

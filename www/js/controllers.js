@@ -1,24 +1,33 @@
-angular.module('alltoez.controllers', ['ngOpenFB'])
+angular.module('alltoez.controllers', ['ngOpenFB',])
 .controller('AlltoezCtrl', function($scope, $stateParams, AuthService, Users,
                                     $ionicHistory) {
+  Ionic.io();
+
   $scope.currentUser = null;
   $scope.isAuthenticated = AuthService.isAuthenticated();
 
   $scope.setCurrentUser = function (user) {
     $scope.currentUser = user;
   };
+
+  function getUserInfo() {
+    var ioUser = Ionic.User.current();
+    Users.me().$promise.then(function(user) {
+      console.log(JSON.stringify(user))
+      $scope.setCurrentUser(user);
+      ioUser.id = user.pk;
+      ioUser.email = user.email;
+    }, function(err) {
+      AuthService.logout();
+      ioUser.id = Ionic.User.anonymousId();
+    });
+  }
+
   $scope.$watch(function () {
     return AuthService.isAuthenticated() }, function (newVal, oldVal) {
       var ioUser = Ionic.User.current();
       if (newVal === true) {
-        Users.me().$promise.then(function(user) {
-          $scope.setCurrentUser(user);
-          ioUser.id = user.pk;
-          ioUser.email = user.email;
-        }, function(err) {
-          AuthService.logout();
-          ioUser.id = Ionic.User.anonymousId();
-        });
+        getUserInfo();
       }
       else {
         ioUser.id = Ionic.User.anonymousId();
@@ -84,6 +93,7 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
               if (results[1]) {
                 setDataStoreFromNewAddress(results[1]);
                 updateFilterUI();
+                $state.go($state.current, {}, {reload: true});
               } else {
                 alert("Unable to get a place for this coordinates");
               }
@@ -343,12 +353,21 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
   };
 })
 
-.controller('UserCtrl', function($scope, $state, ngFB, Signup, $ionicHistory,
-                                 Login, Facebook, AuthService, Logout,
+.controller('UserCtrl', function($scope, $state, ngFB, Signup, $ionicHistory, $http,
+                                 Login, Facebook, AuthService, Logout, Users,
                                $ionicPlatform, $cordovaToast, $ionicLoading) {
   $scope.$on('$ionicView.enter', function(e) {
     console.log("UserCtrl view active");
   });
+
+  if (AuthService.isAuthenticated() && $scope.currentUser)
+  {
+    Users.bookmarked({"id": $scope.currentUser.pk}).$promise.then(function(resp){
+      $scope.bookmarked_events = resp;
+    }, function(err){
+      showToastMsg(err);
+    });
+  }
 
   function showToastMsg(message) {
     console.log(message);
@@ -357,14 +376,30 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
     });
   };
 
+  function getUserAndHideLoading() {
+    console.log($http.defaults.headers.common)
+    Users.me().$promise.then(function(user) {
+      $scope.setCurrentUser(user);
+      if (user.profile.is_complete) {
+        $state.transitionTo('tab.events', {}, {reload: true});
+      } else {
+        $state.transitionTo('tab.update-profile', {}, {reload: true})
+        $ionicLoading.hide();
+      }
+    }, function(err) {
+      $ionicLoading.hide();
+      showToastMsg("Error in getting user info " + JSON.stringify(err.data))
+    });
+  };
+
   $scope.signUp = function(user) {
     $ionicLoading.show();
     console.log('Sign-Up', user);
+    user.username = user.email;
     Signup.save(user).$promise.then(function(response){
-      console.log("Response from Alltoez");
+      console.log("Response from Alltoez " + JSON.stringify(response));
       AuthService.login(response.key);
-      $state.transitionTo('tab.events', {}, {reload: true});
-      $ionicLoading.hide();
+      getUserAndHideLoading();
     }, function(err) {
       $ionicLoading.hide();
       user = err.data;
@@ -384,12 +419,12 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
 
   $scope.logIn = function(user) {
     $ionicLoading.show();
+    console.log('Log In ' + JSON.stringify(user));
     Login.save(user).$promise.then(function(response){
-      console.log("Response from Alltoez");
+      console.log("Response from Alltoez " + JSON.stringify(response));
       AuthService.login(response.key);
-      $state.transitionTo('tab.events', {}, {reload: true});
+      getUserAndHideLoading();
       $ionicHistory.clearHistory();
-      $ionicLoading.hide();
     }, function(err) {
       $ionicLoading.hide();
       var errStr = "Error signing in " + err.statusText + "\n";
@@ -414,11 +449,9 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
           console.log('Facebook login succeeded');
           Facebook.login({access_token: response.authResponse.accessToken})
           .$promise.then(function(response) {
-             console.log("Response from Alltoez");
-             AuthService.login(response.key);
-             $state.transitionTo('tab.events', {}, {reload: true});
-             $ionicHistory.clearHistory();
-             $ionicLoading.hide();
+            console.log("Response from Alltoez " + JSON.stringify(response));
+            AuthService.login(response.key);
+            getUserAndHideLoading();
            });
         } else {
           $ionicLoading.hide();
@@ -436,9 +469,68 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
       AuthService.logout();
       $scope.setCurrentUser(null);
     }, function(err) {
-      showToastMsg('Error logging out');
+      showToastMsg('Error logging out ' + JSON.stringify(err));
     });
   };
+})
+
+.controller('ProfileUpdateCtrl', function($scope, $state, AuthService, Users, Child,
+                                          $cordovaToast, $ionicLoading, $ionicHistory) {
+  $scope.$on('$ionicView.enter', function(e) {
+    console.log("ProfileUpdateCtrl view active");
+  });
+
+  $scope.countries = [
+        {name: 'India', code: 'IN'},
+        {name: 'United States', code: 'US'}
+    ];
+
+  $scope.user = $scope.currentUser;
+  console.log("input");
+  console.log($scope.user);
+
+  $scope.addChild = function () {
+    $scope.user.children.push({})
+  };
+
+  $scope.updateProfile = function (user) {
+    console.log("User")
+    console.log(user)
+
+    var children = user.children;
+    console.log("Children")
+    console.log(children)
+
+    children.forEach(function(child) {
+      console.log(child);
+      if (child.delete) {
+        Child.delete(child).$promise.then(function(resp){}, function(err){
+          console.error(JSON.stringify(err));
+        });
+      } else {
+        if (child.pk) {
+          Child.update(child).$promise.then(function(resp){}, function(err){
+            console.error(JSON.stringify(err));
+          });
+        } else {
+          Child.save(child).$promise.then(function(resp){}, function(err){
+            console.error(JSON.stringify(err));
+          });
+        }
+      }
+    });
+
+    console.log("output");
+    console.log(user);
+    Users.update(user).$promise.then(function(resp){
+      $scope.setCurrentUser(resp);
+      $state.transitionTo('tab.events', {}, {reload: true});
+      $ionicHistory.clearHistory();
+    },
+    function(err){
+      console.error("Error updating profile " + JSON.stringify(err));
+    });
+  }
 })
 
 .filter('format_event_datetime', function() {
@@ -501,4 +593,17 @@ angular.module('alltoez.controllers', ['ngOpenFB'])
       return "female";
     }
   }
+})
+
+.directive("dynamicName",function($compile){
+  return {
+      restrict:"A",
+      terminal:true,
+      priority:1000,
+      link:function(scope,element,attrs){
+          element.attr('name', scope.$eval(attrs.dynamicName));
+          element.removeAttr("dynamic-name");
+          $compile(element)(scope);
+      }
+   };
 });
