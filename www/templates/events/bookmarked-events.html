@@ -1,5 +1,9 @@
-<ion-view view-title="Bookmarked Events" cache-view="false" ng-controller="UserCtrl">
+<ion-view view-title="Bookmarked Events" cache-view="false" ng-controller="UserActionCtrl">
   <ion-content>
+    <ion-refresher
+      pulling-text="Pull to refresh..."
+      on-refresh="doRefreshForBookmarkedEvents()">
+    </ion-refresher>
     <ion-list>
       <div class="list card event" ng-repeat="event in bookmarked_events track by $index">
         <div class="item item-header item-divider item-icon-right">

@@ -13,7 +13,6 @@ angular.module('alltoez.controllers', ['ngOpenFB',])
   function getUserInfo() {
     var ioUser = Ionic.User.current();
     Users.me().$promise.then(function(user) {
-      console.log(JSON.stringify(user))
       $scope.setCurrentUser(user);
       ioUser.id = user.pk;
       ioUser.email = user.email;
@@ -295,13 +294,13 @@ angular.module('alltoez.controllers', ['ngOpenFB',])
      if (res) {
        $state.transitionTo('tab.account', {}, {reload: true});
      } else {
-       console.log('Not willing to sign in');
+       console.error('Not willing to sign in');
      }
    });
  };
 
  $scope.bookmark = function(event) {
-   if ($scope.isAuthenticated()) {
+   if ($scope.isAuthenticated) {
      if (event.bookmark) {
        $http.delete(event.bookmark).then(
          function(response) {
@@ -377,7 +376,6 @@ angular.module('alltoez.controllers', ['ngOpenFB',])
   };
 
   function getUserAndHideLoading() {
-    console.log($http.defaults.headers.common)
     Users.me().$promise.then(function(user) {
       $scope.setCurrentUser(user);
       if (user.profile.is_complete) {
@@ -394,10 +392,8 @@ angular.module('alltoez.controllers', ['ngOpenFB',])
 
   $scope.signUp = function(user) {
     $ionicLoading.show();
-    console.log('Sign-Up', user);
     user.username = user.email;
     Signup.save(user).$promise.then(function(response){
-      console.log("Response from Alltoez " + JSON.stringify(response));
       AuthService.login(response.key);
       getUserAndHideLoading();
     }, function(err) {
@@ -419,9 +415,7 @@ angular.module('alltoez.controllers', ['ngOpenFB',])
 
   $scope.logIn = function(user) {
     $ionicLoading.show();
-    console.log('Log In ' + JSON.stringify(user));
     Login.save(user).$promise.then(function(response){
-      console.log("Response from Alltoez " + JSON.stringify(response));
       AuthService.login(response.key);
       getUserAndHideLoading();
       $ionicHistory.clearHistory();
@@ -449,7 +443,6 @@ angular.module('alltoez.controllers', ['ngOpenFB',])
           console.log('Facebook login succeeded');
           Facebook.login({access_token: response.authResponse.accessToken})
           .$promise.then(function(response) {
-            console.log("Response from Alltoez " + JSON.stringify(response));
             AuthService.login(response.key);
             getUserAndHideLoading();
            });
@@ -473,7 +466,40 @@ angular.module('alltoez.controllers', ['ngOpenFB',])
     });
   };
 })
+.controller('UserActionCtrl', function($scope, $state, Users, $ionicLoading) {
+  $scope.$on('$ionicView.enter', function(e) {
+    console.log("UserActionCtrl view active");
+  });
 
+  function getBookmarkedEvents(success, failure) {
+    Users.bookmarked({"id": $scope.currentUser.pk}).$promise.then(function(resp){
+      success(resp);
+    }, function(err){
+      failure(err);
+    });
+  };
+
+  $scope.doRefresh = function() {
+    $ionicLoading.show();
+    getBookmarkedEvents(function (resp) {
+      $scope.bookmarked_events = resp;
+      // Stop the ion-refresher from spinning
+      $scope.$broadcast('scroll.refreshComplete');
+      $ionicLoading.hide();
+    }, function (err) {
+      console.error(err);
+      // Stop the ion-refresher from spinning
+      $scope.$broadcast('scroll.refreshComplete');
+      $ionicLoading.hide();
+    });
+  };
+
+  getBookmarkedEvents(function (resp) {
+    $scope.bookmarked_events = resp;
+  }, function (err) {
+    console.error(err);
+  });
+})
 .controller('ProfileUpdateCtrl', function($scope, $state, AuthService, Users, Child,
                                           $cordovaToast, $ionicLoading, $ionicHistory) {
   $scope.$on('$ionicView.enter', function(e) {
@@ -486,23 +512,15 @@ angular.module('alltoez.controllers', ['ngOpenFB',])
     ];
 
   $scope.user = $scope.currentUser;
-  console.log("input");
-  console.log($scope.user);
 
   $scope.addChild = function () {
     $scope.user.children.push({})
   };
 
   $scope.updateProfile = function (user) {
-    console.log("User")
-    console.log(user)
-
     var children = user.children;
-    console.log("Children")
-    console.log(children)
 
     children.forEach(function(child) {
-      console.log(child);
       if (child.delete) {
         Child.delete(child).$promise.then(function(resp){}, function(err){
           console.error(JSON.stringify(err));
@@ -520,8 +538,6 @@ angular.module('alltoez.controllers', ['ngOpenFB',])
       }
     });
 
-    console.log("output");
-    console.log(user);
     Users.update(user).$promise.then(function(resp){
       $scope.setCurrentUser(resp);
       $state.transitionTo('tab.events', {}, {reload: true});

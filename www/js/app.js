@@ -117,7 +117,7 @@ angular.module('alltoez', ['ionic','ionic.service.core', 'alltoez.controllers', 
     views: {
       'tab-account': {
         templateUrl: 'templates/events/bookmarked-events.html',
-        controller: 'UserCtrl'
+        controller: 'UserActionCtrl'
       }
     }
   });
