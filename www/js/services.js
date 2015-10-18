@@ -1,52 +1,57 @@
 angular.module('alltoez.services', ['ngResource'])
-.constant("baseApiUrl", AppSettings.baseApiUrl)
-.factory('Events', function($resource, baseApiUrl) {
+.constant("BASE_API_URL_CONST", AppSettings.baseApiUrl)
+.factory('Events', function($resource, BASE_API_URL_CONST) {
   return $resource(
-    baseApiUrl+'events/:id/?format=json',
+    BASE_API_URL_CONST+'events/:id/?format=json',
     {id: "@id"},
     { 'getEvents': {method: 'GET', isArray: false},}
   );
 })
-.factory('Bookmark', function($resource, baseApiUrl) {
+.factory('Category', function($resource, BASE_API_URL_CONST) {
   return $resource(
-    baseApiUrl+'bookmark/:id/?format=json', {id: "@id"}, {}
+    BASE_API_URL_CONST+'category/?format=json'
   );
 })
-.factory('Users', function($resource, baseApiUrl) {
+.factory('Bookmark', function($resource, BASE_API_URL_CONST) {
   return $resource(
-    baseApiUrl+'users/:id/?format=json', {id: "@id"},
-    {'me': {method: 'GET', url: baseApiUrl+'users/me/?format=json'},
-     'update': {method: 'PUT', url: baseApiUrl+'users/:id/?format=json'},
-     'bookmarked': {method: 'GET', url: baseApiUrl+'users/:id/bookmarked/?format=json', isArray:true},
-     'done': {method: 'GET', url: baseApiUrl+'users/:id/done/?format=json', isArray:true}}
+    BASE_API_URL_CONST+'bookmark/:id/?format=json', {id: "@id"}, {}
   );
 })
-.factory('Login', function($resource, baseApiUrl) {
+.factory('Users', function($resource, BASE_API_URL_CONST) {
   return $resource(
-    baseApiUrl+'login/?format=json'
+    BASE_API_URL_CONST+'users/:id/?format=json', {id: "@id"},
+    {'me': {method: 'GET', url: BASE_API_URL_CONST+'users/me/?format=json'},
+     'update': {method: 'PUT', url: BASE_API_URL_CONST+'users/:id/?format=json'},
+     'bookmarked': {method: 'GET', url: BASE_API_URL_CONST+'users/:id/bookmarked/?format=json', isArray:true},
+     'done': {method: 'GET', url: BASE_API_URL_CONST+'users/:id/done/?format=json', isArray:true}}
   );
 })
-.factory('Logout', function($resource, baseApiUrl) {
+.factory('Login', function($resource, BASE_API_URL_CONST) {
   return $resource(
-    baseApiUrl+'logout/?format=json'
+    BASE_API_URL_CONST+'login/?format=json'
   );
 })
-.factory('Signup', function($resource, baseApiUrl) {
+.factory('Logout', function($resource, BASE_API_URL_CONST) {
   return $resource(
-    baseApiUrl+'signup/?format=json'
+    BASE_API_URL_CONST+'logout/?format=json'
   );
 })
-.factory('Facebook', function($resource, baseApiUrl) {
+.factory('Signup', function($resource, BASE_API_URL_CONST) {
   return $resource(
-    baseApiUrl+'facebook/?format=json', {},
+    BASE_API_URL_CONST+'signup/?format=json'
+  );
+})
+.factory('Facebook', function($resource, BASE_API_URL_CONST) {
+  return $resource(
+    BASE_API_URL_CONST+'facebook/?format=json', {},
     {'login': {method: 'POST'}}
   );
 })
-.factory('Child', function($resource, baseApiUrl) {
+.factory('Child', function($resource, BASE_API_URL_CONST) {
   return $resource(
-    baseApiUrl+'child/:id/?format=json', {id: "@id"},
+    BASE_API_URL_CONST+'child/:id/?format=json', {id: "@id"},
     {
-      'update': {method: 'PUT', url: baseApiUrl+'child/:id/?format=json'},
+      'update': {method: 'PUT', url: BASE_API_URL_CONST+'child/:id/?format=json'},
     }
   );
 })
@@ -59,10 +64,13 @@ angular.module('alltoez.services', ['ngResource'])
     function setKV(key, value) {
        window.localStorage.setItem(key + LOCAL_DATASTORE_KEY, value);
     };
-
+    function removeKV(key) {
+      window.localStorage.removeItem(key);
+    };
     return {
       set: setKV,
-      get: getKV
+      get: getKV,
+      remove: removeKV
     };
 })
 .service('AuthService', function($q, $http) {

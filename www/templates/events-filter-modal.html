@@ -1,35 +1,57 @@
 <ion-modal-view cache-view="false">
   <ion-header-bar class="bar bar-header bar-positive">
     <h1 class="title">Event filters</h1>
-    <button class="button button-clear button-primary" ng-click="applyFilters()">Done</button>
     <button class="button button-clear button-secondary" ng-click="modal.hide()">Cancel</button>
   </ion-header-bar>
-  <ion-content class="padding">
-    <div class="card item item-input location-filter">
-      <div class="row">
-        <div class="col col-75">
-          <span><i class="icon ion-location"></i>
-            {{newFilter.selectedLocation.formatted_address || oldFilter.place | limitTo: 30 }}
-          </span>
-          <input ion-autocomplete placeholder="Search location" item-view-value-key="formatted_address" select-items-label="Select a place"
-          selected-items-label="Selected place" autocomplete="off" ng-model="newFilter.selectedLocation"
-          type="text" readonly="readonly" class="ion-autocomplete" items-method="placesAutocomplete(query)"
-          loading-icon="ripple" />
+  <ion-content>
+    <div class="list">
+      <div class="item item-divider">Category Filter</div>
+        <div class="list">
+          <label class="item item-icon-left item-radio">
+            <input type="radio" name="category-group" value="all" ng-model="newFilter.category">
+            <div class="item-content">
+              All events
+            </div>
+            <i class="radio-icon ion-checkmark"></i>
+          </label>
+          <label ng-repeat="category in parentCategories" class="item item-icon-left item-radio">
+            <input type="radio" name="category-group" ng-value="category.slug" ng-model="newFilter.category">
+            <div class="item-content">
+              <i class="fa fa-lg" ng-class="category.font_awesome_icon_class"></i>
+              {{ category.name }}
+            </div>
+            <i class="radio-icon ion-checkmark"></i>
+          </label>
         </div>
-        <div class="col">
-          <button ng-hide="newFilter.waitingForCurLocation" class="button button-positive icon ion-android-locate" ng-click="this.updateModalLocation()"></button>
-          <button class="button button-clear " ng-show="newFilter.waitingForCurLocation"><ion-spinner  icon="ripple" class="spinner-positive"></ion-spinner></button>
+      </div>
+      <div class="item item-divider">Location Filter</div>
+      <div class="card item item-input location-filter">
+        <div class="row">
+          <div class="col col-75">
+            <span><i class="icon ion-location"></i>
+              {{newFilter.selectedLocation.formatted_address || oldFilter.place | limitTo: 30 }}
+            </span>
+            <input ion-autocomplete placeholder="Search location" item-view-value-key="formatted_address" select-items-label="Select a place"
+            selected-items-label="Selected place" autocomplete="off" ng-model="newFilter.selectedLocation"
+            type="text" readonly="readonly" class="ion-autocomplete" items-method="placesAutocomplete(query)"
+            loading-icon="ripple" />
+          </div>
+          <div class="col">
+            <button ng-hide="newFilter.waitingForCurLocation" class="button button-positive icon ion-android-locate" ng-click="this.updateModalLocation()"></button>
+            <button class="button button-clear " ng-show="newFilter.waitingForCurLocation"><ion-spinner  icon="ripple" class="spinner-positive"></ion-spinner></button>
+          </div>
+        </div>
+      </div>
+      <div class="item item-divider">Cost Filter</div>
+      <div class="card item cost-filter">
+        <div>Cost: $ 0 - {{ newFilter.price || 33}}</div>
+        <div class="range">
+          <i class="icon ion-social-usd-outline"></i>
+          <input type="range" name="price" ng-model="newFilter.price" min="0" max="1000">
+          <i class="icon ion-social-usd"></i>
         </div>
       </div>
     </div>
-
-    <div class="card item cost-filter">
-      <div>Cost: $ 0 - {{ newFilter.price || 33}}</div>
-      <div class="range">
-        <i class="icon ion-social-usd-outline"></i>
-        <input type="range" name="price" ng-model="newFilter.price" min="0" max="1000">
-        <i class="icon ion-social-usd"></i>
-      </div>
-    </div>
+    <button class="button button-block button-balanced" ng-click="applyFilters()">Apply filters</button>
   </ion-content>
 </ion-modal-view>

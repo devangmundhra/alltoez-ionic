@@ -1,50 +1,66 @@
-angular.module('alltoez.controllers', ['ngOpenFB',])
-.controller('AlltoezCtrl', function($scope, $stateParams, AuthService, Users,
-                                    $ionicHistory) {
-  Ionic.io();
+angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
+.controller('AlltoezCtrl', function($scope, $stateParams, AuthService,
+                                    Users, $ionicHistory, DataStore) {
+  var ANON_USER_ID_CONST = "anonUserId";
 
   $scope.currentUser = null;
   $scope.isAuthenticated = AuthService.isAuthenticated();
+
+  function retrieveOrCreateUser() {
+    if (AppSettings.debug) {
+      return;
+    }
+
+    var userId;
+    if ($scope.currentUser) {
+      userId = $scope.currentUser;
+    } else {
+      userId = DataStore.get(ANON_USER_ID_CONST);
+      if (!userId) {
+        userId = Ionic.User.anonymousId();
+        DataStore.set(ANON_USER_ID_CONST, userId);
+      }
+    }
+    Ionic.User.load(userId).then(function(user){
+      Ionic.User.current(user); // Tell Ionic about user and set to local storage
+    }, function(error){
+      var newUser = Ionic.User.current(); // No user found at Ionic.io, create new
+      newUser.id = userId;
+      newUser.save(); // Saves user to Ionic.io as new user, saves to local storage
+    });
+  }
 
   $scope.setCurrentUser = function (user) {
     $scope.currentUser = user;
   };
 
-  function getUserInfo() {
-    var ioUser = Ionic.User.current();
+  function getUserInfo(callback) {
     Users.me().$promise.then(function(user) {
       $scope.setCurrentUser(user);
-      ioUser.id = user.pk;
-      ioUser.email = user.email;
+      callback();
     }, function(err) {
       AuthService.logout();
-      ioUser.id = Ionic.User.anonymousId();
+      $scope.setCurrentUser(null);
+      callback();
     });
   }
 
   $scope.$watch(function () {
     return AuthService.isAuthenticated() }, function (newVal, oldVal) {
-      var ioUser = Ionic.User.current();
       if (newVal === true) {
-        getUserInfo();
+        getUserInfo(retrieveOrCreateUser);
       }
       else {
-        ioUser.id = Ionic.User.anonymousId();
         $scope.setCurrentUser(null);
+        retrieveOrCreateUser();
       }
       $ionicHistory.clearCache();
-      ioUser.save();
     });
 })
 .controller('EventsCtrl', function($scope, $state, $stateParams, Events, Bookmark,
                                    $ionicModal, $ionicPopup, $http, DataStore,
                                    $cordovaGeolocation, $ionicPlatform, $q,
-                                 $ionicLoading, $ionicHistory) {
-  // With the new view caching in Ionic, Controllers are only called
-  // when they are recreated or on app start, instead of every page change.
-  // To listen for when this page is active (for example, to refresh data),
-  // listen for the $ionicView.enter event:
-  //
+                                   $ionicLoading, $ionicHistory, Category) {
   // Initialize variables
   var currentOffset = 0;
   $scope.selectedLocation = null;
@@ -77,6 +93,11 @@ angular.module('alltoez.controllers', ['ngOpenFB',])
     };
 
   function loadDataStore() {
+    // Get parent categories
+    $scope.parentCategories = Category.query({
+      'parent_category': true,
+      'font_awesome_icon_class': true})
+
     var shouldGetCurLoc = false;
     for (key in dsDefaults) {
       if (!DataStore.get(key) || typeof DataStore.get(key) === "undefined" || DataStore.get(key) === "undefined") {
@@ -130,9 +151,12 @@ angular.module('alltoez.controllers', ['ngOpenFB',])
     DataStore.set('latitude', center.lat());
   };
 
-  updateFilterUI = function () {
+  function updateFilterUI() {
     if ($scope.filterParams.api['category']) {
-      $scope.filterParams.ui['of category '] = $scope.filterParams.api['category']
+      $scope.filterParams.ui['category '] = $scope.filterParams.api['category']
+    } else {
+      $scope.filterParams.ui['category '] = '';
+      delete $scope.filterParams.ui['category '];
     }
     if (DataStore.get('latitude') && DataStore.get('longitude')) {
       $scope.filterParams.api['location'] = DataStore.get('latitude') + ',' +
@@ -161,6 +185,7 @@ angular.module('alltoez.controllers', ['ngOpenFB',])
       if (!resp.next) {
         $scope.noMoreItemsAvailable = true;
       }
+      $scope.eventCount = resp.count;
       success(resp);
       $scope.fetchingEvents = false;
     },
@@ -210,6 +235,7 @@ angular.module('alltoez.controllers', ['ngOpenFB',])
    animation: 'slide-in-up'
  }).then(function(modal) {
    $scope.newFilter = {
+     "category": "all",
      "price": DataStore.get('max_cost'),
      "waitingForCurLocation" : false
    };
@@ -277,6 +303,14 @@ angular.module('alltoez.controllers', ['ngOpenFB',])
    $scope.filterParams.api['max_cost'] = $scope.newFilter.price;
    DataStore.set('max_cost', $scope.newFilter.price);
 
+   if ($scope.newFilter.category === "all") {
+     $scope.filterParams.api['category'] = '';
+     delete $scope.filterParams.api.category;
+     $state.go($state.$current, {category: null}, { notify: false });
+   } else {
+     $scope.filterParams.api['category'] = $scope.newFilter.category;
+     $state.go($state.$current, {category: $scope.newFilter.category}, { notify: false });
+   }
    // Update filter UI text
    updateFilterUI();
 
@@ -382,8 +416,8 @@ angular.module('alltoez.controllers', ['ngOpenFB',])
         $state.transitionTo('tab.events', {}, {reload: true});
       } else {
         $state.transitionTo('tab.update-profile', {}, {reload: true})
-        $ionicLoading.hide();
       }
+      $ionicLoading.hide();
     }, function(err) {
       $ionicLoading.hide();
       showToastMsg("Error in getting user info " + JSON.stringify(err.data))
@@ -610,7 +644,16 @@ angular.module('alltoez.controllers', ['ngOpenFB',])
     }
   }
 })
-
+.filter('lte', function() {
+  return function(value, limit) {
+    return value && value <= limit;
+  }
+})
+.filter('gte', function() {
+  return function(value, limit) {
+    return value && value >= limit;
+  }
+})
 .directive("dynamicName",function($compile){
   return {
       restrict:"A",

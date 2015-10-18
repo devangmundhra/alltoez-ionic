@@ -4,8 +4,9 @@
 // the 2nd parameter is an array of 'requires'
 // 'alltoez.services' is found in services.js
 // 'alltoez.controllers' is found in controllers.js
-angular.module('alltoez', ['ionic','ionic.service.core', 'alltoez.controllers', 'alltoez.services',
-'ng-showdown', 'ngOpenFB', 'ngCordova', 'ion-autocomplete', 'ngIOS9UIWebViewPatch'])
+angular.module('alltoez', ['ionic','ionic.service.core', 'ionic.service.analytics',
+'alltoez.controllers', 'alltoez.services', 'ng-showdown', 'ngOpenFB', 'ngCordova',
+'ion-autocomplete', 'ngIOS9UIWebViewPatch'])
 .constant('AUTH_EVENTS', {
   notAuthenticated: 'auth-not-authenticated',
   notAuthorized: 'auth-not-authorized'
@@ -13,10 +14,14 @@ angular.module('alltoez', ['ionic','ionic.service.core', 'alltoez.controllers', 
 .constant('$ionicLoadingConfig', {
   template: '<ion-spinner icon="spiral" class="spinner-energized"></ion-spinner>'
 })
-.run(function($ionicPlatform, ngFB) {
-  ngFB.init({appId: '436853689787509'});
-  Ionic.io();
+.run(function($ionicPlatform, $ionicAnalytics, ngFB) {
+  ngFB.init({appId: AppSettings.fbAppId});
   $ionicPlatform.ready(function() {
+    Ionic.io();
+    if (!AppSettings.debug) {
+      $ionicAnalytics.register();
+    }
+
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
     if (window.cordova && window.cordova.plugins && window.cordova.plugins.Keyboard) {

@@ -1,4 +1,5 @@
 <ion-view view-title="Events" ng-controller="EventsCtrl" hide-back-button="true" >
+  <ion-nav-title>{{eventCount}} Events</ion-nav-title>
   <ion-nav-buttons side="secondary">
      <button class="button button-icon icon ion-levels" ng-click="filterOptions()">
      </button>
@@ -8,7 +9,7 @@
     <div class="filter-text">
       <div ng-repeat="(filterKey, filterValue) in filterParams.ui"
       ng-model="filterParams.lastRefreshTime">
-        <span>{{ filterKey }}{{ filterValue }}</span>
+        <span>{{ filterKey }}<b>{{ filterValue }}</b></span>
       </div>
     </div>
    </ion-header-bar>
@@ -34,8 +35,13 @@
 
         <div class="item item-image">
           <a ui-sref="tab.event-detail({eventId: event.id})">
-            <img ng-src="{{ event.thumbnail_384_256 }}" style="width: 100%; height: 128px">
+            <img ng-src="{{ event.thumbnail_384_256 }}" class="event-image">
           </a>
+          <div class="event-overlay">
+              <span class="event-date" ng-if="event.end_date">{{ event.start_date|amDateFormat:'ddd, MMM D' }}<span ng-if="event.end_date != event.start_date"> - {{ event.end_date|amDateFormat:'ddd, MMM D' }}</span></span>
+              <span class="event-freshness just-in" ng-if="event.published_at| amDifference:null:'days' | gte:-2">Just in</span>
+              <span class="event-freshness expiring" ng-if="event.end_date && event.end_date| amDifference:null:'days' | lte:5">Ending soon</span>
+          </div>
         </div>
         <div class="item item-divider item-wordwrap">
           <a class="tab-item" ui-sref="tab.event-detail({eventId: event.id})">

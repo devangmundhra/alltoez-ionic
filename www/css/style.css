@@ -15,10 +15,41 @@ div.filter-text div {
   display: inline;
 }
 
+img.event-image {
+    max-height:128px;
+    width:100%;
+    height:auto;
+    object-fit:cover;
+}
 .event-basic-info {
   color: #387ef5;
   font-weight: 400;
+}
 
+.event-overlay .event-date, .event-freshness {
+  position: absolute;
+  top: 10px;
+  padding: 1px 4px;
+  border-radius: 5px;
+  font-size: 12px;
+}
+.event-date {
+    right: 10px;
+    background: rgba(255,255,255,0.7);
+    color: #333;
+}
+.event-freshness {
+    left: 10px;
+    color: #FFF;
+}
+.just-in {
+    background: rgba(0, 116, 37, 0.7);
+}
+.expiring {
+    background: rgba(160, 0, 0, 0.7);
+}
+.today {
+    background: rgba(2, 42, 171, 0.7);
 }
 
 div.filter-text span {
@@ -41,4 +72,12 @@ i.bookmarked {
 
 form div.alert {
   color: red;
+}
+
+.platform-android .bar-subheader.has-tabs-top{
+  top:93px !important;
+}
+
+.platform-android .has-subheader.has-tabs-top{
+  top:137px;
 }

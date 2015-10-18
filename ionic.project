@@ -1,4 +1,11 @@
 {
   "name": "Alltoez",
-  "app_id": "bb92c237"
+  "app_id": "bb92c237",
+  "browsers": [
+    {
+      "platform": "android",
+      "browser": "crosswalk",
+      "version": "12.41.296.5"
+    }
+  ]
 }
