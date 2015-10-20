@@ -78,4 +78,5 @@
   <icon src="resources/android/icon/drawable-xhdpi-icon.png"/>
   <plugin name="cordova-plugin-x-toast" spec="https://github.com/EddyVerbruggen/Toast-PhoneGap-Plugin.git"/>
   <plugin name="cordova-plugin-inappbrowser" spec="~1.0.1"/>
+  <plugin name="cordova-plugin-ipad-multitasking" spec="~0.1.0"/>
 </widget>
