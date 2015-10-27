@@ -19,7 +19,7 @@ angular.module('alltoez', ['ionic','ionic.service.core', 'ionic.service.analytic
   $ionicPlatform.ready(function() {
     Ionic.io();
     if (!AppSettings.debug) {
-      $ionicAnalytics.register();
+      // $ionicAnalytics.register();
     }
 
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard

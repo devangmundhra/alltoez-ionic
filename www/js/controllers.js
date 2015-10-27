@@ -152,6 +152,10 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
   };
 
   function updateFilterUI() {
+    if ($stateParams.category)
+    {
+      $scope.filterParams.api['category'] = $stateParams.category;
+    }
     if ($scope.filterParams.api['category']) {
       $scope.filterParams.ui['category '] = $scope.filterParams.api['category']
     } else {
@@ -309,6 +313,7 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
      $state.go($state.$current, {category: null}, { notify: false });
    } else {
      $scope.filterParams.api['category'] = $scope.newFilter.category;
+     $stateParams.category = $scope.newFilter.category;
      $state.go($state.$current, {category: $scope.newFilter.category}, { notify: false });
    }
    // Update filter UI text
@@ -582,7 +587,7 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
     });
   }
 })
-
+// Filters
 .filter('format_event_datetime', function() {
   return function(value) {
     if (!value) return "";
@@ -654,6 +659,7 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
     return value && value >= limit;
   }
 })
+// Directives
 .directive("dynamicName",function($compile){
   return {
       restrict:"A",
@@ -665,4 +671,11 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
           $compile(element)(scope);
       }
    };
+})
+.directive('appVersion', function () {
+  return function(scope, elm, attrs) {
+    cordova.getAppVersion(function (version) {
+      elm.text(version);
+    });
+  };
 });
