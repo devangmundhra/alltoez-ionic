@@ -122,7 +122,22 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
           };
         })
       }, function(err) {
-        alert("Error in getting location: " + JSON.stringify(err));
+        alert_msg = "Error in getting location. ";
+        switch(err.code) {
+          case 1:
+            alert_msg += 'You haven\'t shared your location. Please enable it in Settings.'
+            break;
+          case 2:
+            alert_msg += 'Couldn\'t detect your current location.'
+            break;
+          case 3:
+            alert_msg += 'Retrieving your position timeouted.'
+            break;
+          default:
+            alert_msg += 'Retrieving your position failed for unknown reason. Error code: ' + err.code + '. Error message: ' + err.message
+            break;
+        }
+        alert(alert_msg);
       });
     }
   }
@@ -267,7 +282,22 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
 
        })
      }, function(err) {
-       alert("Error in getting location: " + JSON.stringify(err));
+       alert_msg = "Error in getting location. ";
+       switch(err.code) {
+         case 1:
+           alert_msg += 'You haven\'t shared your location. Please enable it in Settings.'
+           break;
+         case 2:
+           alert_msg += 'Couldn\'t detect your current location.'
+           break;
+         case 3:
+           alert_msg += 'Retrieving your position timeouted.'
+           break;
+         default:
+           alert_msg += 'Retrieving your position failed for unknown reason. Error code: ' + err.code + '. Error message: ' + err.message
+           break;
+       }
+       alert(alert_msg);
      });
    };
 
@@ -392,7 +422,7 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
 })
 
 .controller('UserCtrl', function($scope, $state, ngFB, Signup, $ionicHistory, $http,
-                                 Login, Facebook, AuthService, Logout, Users,
+                                 Login, Facebook, AuthService, Logout, Users, Password,
                                $ionicPlatform, $cordovaToast, $ionicLoading) {
   $scope.$on('$ionicView.enter', function(e) {
     console.log("UserCtrl view active");
@@ -428,6 +458,16 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
       showToastMsg("Error in getting user info " + JSON.stringify(err.data))
     });
   };
+
+  $scope.forgotPassword = function(email) {
+    Password.reset({'email': email}).$promise.then(function(response) {
+      var msg = "Password reset email has been sent. Please check your email: " + email;
+      showToastMsg(msg);
+      $state.transitionTo("tab.login", {}, {reload: true});
+    }, function(err) {
+      showToastMsg("Error in getting resetting password: " + JSON.stringify(err.data))
+    });
+  }
 
   $scope.signUp = function(user) {
     $ionicLoading.show();

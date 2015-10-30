@@ -18,9 +18,12 @@
             <img ng-src="{{ event.thumbnail_384_256 }}" style="width: 100%; height: 128px">
           </a>
         </div>
-        <div class="item item-divider item-wordwrap">
+        <div class="item item-divider item-wordwrap tabs tabs-secondary">
           <a class="tab-item" ui-sref="tab.event-detail({eventId: event.id})">
-              {{ event.cost === 0 ? "Free" : "$" + event.cost}}, {{ event.min_age | format_event_age:event.max_age }}
+              <span class="event-basic-info">{{ event.cost === 0 ? "Free" : "$" + event.cost}}, {{ event.min_age | format_event_age:event.max_age }}</span>
+          </a>
+          <a class="tab-item" ui-sref="tab.event-detail({eventId: event.id})" ng-show="event.distance">
+              <span class="event-basic-info">{{ event.distance | number : 1 }} mi</span>
           </a>
         </div>
       </div>

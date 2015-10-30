@@ -55,6 +55,13 @@ angular.module('alltoez.services', ['ngResource'])
     }
   );
 })
+.factory('Password', function($resource, BASE_API_URL_CONST) {
+  return $resource(
+    BASE_API_URL_CONST+'password/?format=json', {},
+    {'reset': {method: 'POST', url: BASE_API_URL_CONST+'password/reset/?format=json'},
+     'confirm': {method: 'POST', url: BASE_API_URL_CONST+'password/reset/confirm/?format=json'}}
+  );
+})
 .service('DataStore', function($q, $http) {
     var LOCAL_DATASTORE_KEY = '.key.datastore.alltoez.com';
 

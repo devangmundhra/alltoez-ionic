@@ -1,0 +1,39 @@
+<ion-view view-title="Login to Alltoez">
+  <ion-content padding="true">
+    <div class="padding-vertical facebook-signin">
+      <button class="button button-block button-positive" ng-click="fbLogin()">
+      Login with Facebook
+      </button>
+    </div>
+    <form name="signinForm">
+      <div class="list">
+        <label class="item item-input">
+          <input type="email" required placeholder="Email" name="email" ng-model="user.email">
+        </label>
+        <label class="item item-input">
+          <input type="password" required placeholder="Password" name="password" ng-model="user.password">
+        </label>
+      </div>
+      <div role="alert" class="alert">
+        <span class="error" ng-show="(signinForm.email.$error.required || signinForm.password.$error.required)">
+          Please enter both email and password<br/>
+        </span>
+        <span class="error" ng-show="signinForm.email.$error.email">
+          Not a valid email address
+        </span>
+      </div>
+      <div class="padding">
+        <button type="submit" class="button button-block button-positive" ng-click="logIn(user)">
+          Already a user? Log in
+        </button>
+        <p class="text-center">
+          <a ui-sref="tab.forgotpassword">Forgot password?</a>
+        </p>
+        <br/>
+        <p class="text-center">
+          Not registered yet? <a ui-sref="tab.signup">Sign up</a>
+        </p>
+      </div>
+    </form>
+  </ion-content>
+</ion-view>
