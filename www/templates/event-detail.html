@@ -6,7 +6,7 @@
 -->
 <ion-view view-title="Event Detail">
   <ion-content padding="true" scrollbar-x="false" scrollbar-y="false">
-    <div class="list card">
+    <div class="list card" ng-if="event">
       <div class="item item-body">
         <img ng-src="{{event.thumbnail_384_256}}" style="width: 100%; height: 200px"/>
         <h3>{{ event.title }}</h3>

@@ -1,6 +1,7 @@
 angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
 .controller('AlltoezCtrl', function($scope, $stateParams, AuthService,
-                                    Users, $ionicHistory, DataStore) {
+                                    Users, $ionicHistory, DataStore,
+                                    $ionicPlatform, $cordovaToast) {
   var ANON_USER_ID_CONST = "anonUserId";
 
   $scope.currentUser = null;
@@ -56,6 +57,13 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
       }
       $ionicHistory.clearCache();
     });
+
+    $scope.showToastMsg = function (message) {
+      console.log(message);
+      $ionicPlatform.ready(function() {
+        $cordovaToast.showShortTop(message);
+      });
+    };
 })
 .controller('EventsCtrl', function($scope, $state, $stateParams, Events, Bookmark,
                                    $ionicModal, $ionicPopup, $http, DataStore,
@@ -394,8 +402,17 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
  };
 })
 
-.controller('EventsDetailCtrl', function($scope, $stateParams, Events) {
-  $scope.event = Events.get({id: $stateParams.eventId});
+.controller('EventsDetailCtrl', function($scope, $stateParams, Events, $ionicLoading) {
+  $ionicLoading.show();
+  Events.get({id: $stateParams.eventId}).$promise.then(
+    function(response) {
+      $scope.event = response;
+      $ionicLoading.hide();
+    },
+    function(err) {
+      $ionicLoading.hide();
+      $scope.showToastMsg("Error in fetching event details");
+    });
 })
 
 .controller('AccountCtrl', function($scope, $cordovaEmailComposer) {
@@ -423,7 +440,7 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
 
 .controller('UserCtrl', function($scope, $state, ngFB, Signup, $ionicHistory, $http,
                                  Login, Facebook, AuthService, Logout, Users, Password,
-                               $ionicPlatform, $cordovaToast, $ionicLoading) {
+                                 $ionicLoading) {
   $scope.$on('$ionicView.enter', function(e) {
     console.log("UserCtrl view active");
   });
@@ -433,16 +450,9 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
     Users.bookmarked({"id": $scope.currentUser.pk}).$promise.then(function(resp){
       $scope.bookmarked_events = resp;
     }, function(err){
-      showToastMsg(err);
+      $scope.showToastMsg(err);
     });
   }
-
-  function showToastMsg(message) {
-    console.log(message);
-    $ionicPlatform.ready(function() {
-      $cordovaToast.showShortTop(message);
-    });
-  };
 
   function getUserAndHideLoading() {
     Users.me().$promise.then(function(user) {
@@ -455,17 +465,17 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
       $ionicLoading.hide();
     }, function(err) {
       $ionicLoading.hide();
-      showToastMsg("Error in getting user info " + JSON.stringify(err.data))
+      $scope.showToastMsg("Error in getting user info " + JSON.stringify(err.data))
     });
   };
 
   $scope.forgotPassword = function(email) {
     Password.reset({'email': email}).$promise.then(function(response) {
       var msg = "Password reset email has been sent. Please check your email: " + email;
-      showToastMsg(msg);
+      $scope.showToastMsg(msg);
       $state.transitionTo("tab.login", {}, {reload: true});
     }, function(err) {
-      showToastMsg("Error in getting resetting password: " + JSON.stringify(err.data))
+      $scope.showToastMsg("Error in getting resetting password: " + JSON.stringify(err.data))
     });
   }
 
@@ -478,7 +488,7 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
     }, function(err) {
       $ionicLoading.hide();
       user = err.data;
-      var errStr = "Error signing in " + err.statusText + "\n";
+      var errStr = "Error signing in \n";
       if (err.data.username) {
         errStr += "email: " + err.data.username + "\n";
       }
@@ -488,7 +498,7 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
       if (err.data.non_field_errors) {
         errStr += err.data.non_field_errors + "\n";
       }
-      showToastMsg(errStr);
+      $scope.showToastMsg(errStr);
     });
   };
 
@@ -500,7 +510,7 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
       $ionicHistory.clearHistory();
     }, function(err) {
       $ionicLoading.hide();
-      var errStr = "Error signing in " + err.statusText + "\n";
+      var errStr = "Error signing in \n";
       if (err.data.username) {
         errStr += "email: " + err.data.username + "\n";
       }
@@ -510,7 +520,7 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
       if (err.data.non_field_errors) {
         errStr += err.data.non_field_errors + "\n";
       }
-      showToastMsg(errStr);
+      $scope.showToastMsg(errStr);
     });
   };
 
@@ -524,10 +534,11 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
           .$promise.then(function(response) {
             AuthService.login(response.key);
             getUserAndHideLoading();
+            $ionicHistory.clearHistory();
            });
         } else {
           $ionicLoading.hide();
-          showToastMsg('Facebook login failed');
+          $scope.showToastMsg('Facebook login failed');
           AuthService.logout();
         }
       }
@@ -541,7 +552,7 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
       AuthService.logout();
       $scope.setCurrentUser(null);
     }, function(err) {
-      showToastMsg('Error logging out ' + JSON.stringify(err));
+      $scope.showToastMsg('Error logging out ' + JSON.stringify(err));
     });
   };
 })
@@ -580,7 +591,7 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
   });
 })
 .controller('ProfileUpdateCtrl', function($scope, $state, AuthService, Users, Child,
-                                          $cordovaToast, $ionicLoading, $ionicHistory) {
+                                          $ionicLoading, $ionicHistory) {
   $scope.$on('$ionicView.enter', function(e) {
     console.log("ProfileUpdateCtrl view active");
   });
