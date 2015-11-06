@@ -61,7 +61,7 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
     $scope.showToastMsg = function (message) {
       console.log(message);
       $ionicPlatform.ready(function() {
-        $cordovaToast.showShortTop(message);
+        $cordovaToast.showLongTop(message);
       });
     };
 })
@@ -93,7 +93,7 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
 
   //create datastore with default values
   var dsDefaults = {
-      place: 'San Francisco',
+      place: 'San Francisco, CA, USA',
       latitude: 37.7833,
       longitude: -122.4167,
       radius: 40,
@@ -115,18 +115,37 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
     }
 
     if (shouldGetCurLoc) {
-      getCurLocation(function(position) {
+      getCurLocation(function(result) {
+        setDataStoreFromNewAddress(result);
+        $state.go($state.current, {}, {reload: true});
+      });
+    }
+  }
+
+  function reverseGeocode(position, callback) {
+    var lat  = position.coords.latitude;
+    var lng = position.coords.longitude;
+    var geocoder = new google.maps.Geocoder();
+    var latlng = new google.maps.LatLng(lat, lng);
+    geocoder.geocode({ 'location': latlng }, callback);
+  };
+
+  function getCurLocation(success) {
+    var posOptions = {timeout: 2*60*1000, enableHighAccuracy: false};
+    $ionicPlatform.ready(function() {
+      $cordovaGeolocation
+      .getCurrentPosition(posOptions)
+      .then(function(position) {
         reverseGeocode(position, function(results, status) {
           if (status == google.maps.GeocoderStatus.OK) {
-              if (results[1]) {
-                setDataStoreFromNewAddress(results[1]);
-                updateFilterUI();
-                $state.go($state.current, {}, {reload: true});
-              } else {
-                alert("Unable to get a place for this coordinates");
-              }
+            var result = results[1] || results[0];
+            if (result) {
+              success(result);
+            } else {
+              $scope.showToastMsg("Unable to get a place for this coordinates");
+            }
           } else {
-            alert("Unable to get a place for this coordinates");
+            $scope.showToastMsg("Unable to get a place for this coordinates");
           };
         })
       }, function(err) {
@@ -145,25 +164,8 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
             alert_msg += 'Retrieving your position failed for unknown reason. Error code: ' + err.code + '. Error message: ' + err.message
             break;
         }
-        alert(alert_msg);
+        $scope.showToastMsg(alert_msg);
       });
-    }
-  }
-
-  function reverseGeocode(position, callback) {
-    var lat  = position.coords.latitude;
-    var lng = position.coords.longitude;
-    var geocoder = new google.maps.Geocoder();
-    var latlng = new google.maps.LatLng(lat, lng);
-    geocoder.geocode({ 'location': latlng }, callback);
-  };
-
-  function getCurLocation(success, error) {
-    var posOptions = {timeout: 2*60*1000, enableHighAccuracy: false};
-    $ionicPlatform.ready(function() {
-      $cordovaGeolocation
-      .getCurrentPosition(posOptions)
-      .then(success, error);
     });
   };
 
@@ -262,7 +264,7 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
    animation: 'slide-in-up'
  }).then(function(modal) {
    $scope.newFilter = {
-     "category": "all",
+     "category": $stateParams.category || "all",
      "price": DataStore.get('max_cost'),
      "waitingForCurLocation" : false
    };
@@ -274,38 +276,10 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
 
    $scope.updateModalLocation = function() {
      $scope.newFilter.waitingForCurLocation = true;
-     getCurLocation(function(position) {
-       reverseGeocode(position, function(results, status) {
-         if (status == google.maps.GeocoderStatus.OK) {
-           $scope.newFilter.waitingForCurLocation = false;
-           if (results[0]) {
-             $scope.newFilter.selectedLocation = results[0];
-             $scope.$apply();
-           } else {
-             alert("Unable to get a place for this coordinates");
-           }
-         } else {
-           alert("Unable to get a place for this coordinates");
-         };
-
-       })
-     }, function(err) {
-       alert_msg = "Error in getting location. ";
-       switch(err.code) {
-         case 1:
-           alert_msg += 'You haven\'t shared your location. Please enable it in Settings.'
-           break;
-         case 2:
-           alert_msg += 'Couldn\'t detect your current location.'
-           break;
-         case 3:
-           alert_msg += 'Retrieving your position timeouted.'
-           break;
-         default:
-           alert_msg += 'Retrieving your position failed for unknown reason. Error code: ' + err.code + '. Error message: ' + err.message
-           break;
-       }
-       alert(alert_msg);
+     getCurLocation(function(result) {
+       $scope.newFilter.waitingForCurLocation = false;
+       $scope.newFilter.selectedLocation = result;
+       $scope.$apply();
      });
    };
 
@@ -348,11 +322,11 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
    if ($scope.newFilter.category === "all") {
      $scope.filterParams.api['category'] = '';
      delete $scope.filterParams.api.category;
-     $state.go($state.$current, {category: null}, { notify: false });
+     $state.go($state.$current, {category: null}, { reload: true });
    } else {
      $scope.filterParams.api['category'] = $scope.newFilter.category;
      $stateParams.category = $scope.newFilter.category;
-     $state.go($state.$current, {category: $scope.newFilter.category}, { notify: false });
+     $state.go($state.$current, {category: $scope.newFilter.category}, { reload: true });
    }
    // Update filter UI text
    updateFilterUI();
@@ -415,7 +389,8 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
     });
 })
 
-.controller('AccountCtrl', function($scope, $cordovaEmailComposer) {
+.controller('AccountCtrl', function($scope, $ionicPlatform,
+                                    $cordovaEmailComposer) {
   $scope.settings = {};
 
   $scope.contactEmail = function() {
@@ -723,10 +698,12 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
       }
    };
 })
-.directive('appVersion', function () {
+.directive('appVersion', function ($ionicPlatform) {
   return function(scope, elm, attrs) {
-    cordova.getAppVersion(function (version) {
-      elm.text(version);
+    $ionicPlatform.ready(function() {
+      cordova.getAppVersion(function (version) {
+        elm.text(version);
+      });
     });
   };
 });

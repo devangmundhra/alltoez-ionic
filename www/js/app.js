@@ -60,7 +60,8 @@ angular.module('alltoez', ['ionic','ionic.service.core', 'ionic.service.analytic
         templateUrl: 'templates/tab-events.html',
         controller: 'EventsCtrl'
       }
-    }
+    },
+    cache: false
   })
   .state('tab.event-detail', {
     url: '/events/:eventId',

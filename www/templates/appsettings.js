@@ -5,7 +5,7 @@ AppSettings = {
   debug: true
   // @endif
   // @if ENV == 'PRODUCTION'
-  baseApiUrl: 'http://www.alltoez.com/api/v1/',
+  baseApiUrl: 'https://www.alltoez.com/api/v1/',
   fbAppId: '869081253104828',
   // @endif
 }
