@@ -62,12 +62,13 @@ div.filter-text span {
   font-size: .9em;
 }
 
-div.event a {
-  text-decoration: none;
-}
 
 i.bookmarked {
   color: blue;
+}
+
+i.unbookmarked {
+  color: rgba(56, 126, 245, 0.4);
 }
 
 form div.alert {
@@ -80,4 +81,8 @@ form div.alert {
 
 .platform-android .has-subheader.has-tabs-top{
   top:137px;
+}
+
+.no-text-decoration {
+  text-decoration: none;
 }

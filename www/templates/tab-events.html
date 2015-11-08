@@ -24,17 +24,17 @@
     <ion-list ng-show="events.length">
       <div class="list card event" ng-repeat="event in events track by $index">
         <div class="item item-header item-divider item-icon-right">
-          <a ui-sref="tab.event-detail({eventId: event.id})">
+          <a ui-sref="tab.event-detail({eventId: event.id})" class="no-text-decoration">
             <h2>{{ event.title }}</h2>
             <p>{{event.venue.neighborhood}}, {{ event.venue.city }}</p>
           </a>
-          <a class="tab-item" href="#" ng-click="bookmark(event)">
-            <i class="icon ion-android-bookmark" ng-class="{bookmarked: event.bookmark}"></i>
+          <a href="#" ng-click="bookmark(event)" class="no-text-decoration">
+            <i class="icon ion-android-bookmark" ng-class="{bookmarked: event.bookmark, unbookmarked: !event.bookmark}"></i>
           </a>
         </div>
 
         <div class="item item-image">
-          <a ui-sref="tab.event-detail({eventId: event.id})">
+          <a ui-sref="tab.event-detail({eventId: event.id})" class="no-text-decoration">
             <img ng-src="{{ event.thumbnail_384_256 }}" style="height: 128px" class="event-image">
           </a>
           <div class="event-overlay">
@@ -44,10 +44,10 @@
           </div>
         </div>
         <div class="item item-divider item-wordwrap tabs tabs-secondary">
-          <a class="tab-item" ui-sref="tab.event-detail({eventId: event.id})">
+          <a class="tab-item" ui-sref="tab.event-detail({eventId: event.id})" class="no-text-decoration">
               <span class="event-basic-info">{{ event.cost === 0 ? "Free" : "$" + event.cost}}, {{ event.min_age | format_event_age:event.max_age }}</span>
           </a>
-          <a class="tab-item" ui-sref="tab.event-detail({eventId: event.id})" ng-show="event.distance">
+          <a class="tab-item" ui-sref="tab.event-detail({eventId: event.id})" ng-show="event.distance" class="no-text-decoration">
               <span class="event-basic-info">{{ event.distance | number : 1 }} mi</span>
           </a>
         </div>

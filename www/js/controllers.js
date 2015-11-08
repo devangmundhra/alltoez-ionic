@@ -48,6 +48,7 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
 
   $scope.$watch(function () {
     return AuthService.isAuthenticated() }, function (newVal, oldVal) {
+      $scope.isAuthenticated = newVal;
       if (newVal === true) {
         getUserInfo(retrieveOrCreateUser);
       }
@@ -117,7 +118,7 @@ angular.module('alltoez.controllers', ['ngOpenFB', 'angularMoment',])
     if (shouldGetCurLoc) {
       getCurLocation(function(result) {
         setDataStoreFromNewAddress(result);
-        $state.go($state.current, {}, {reload: true});
+        window.location.reload(true);
       });
     }
   }

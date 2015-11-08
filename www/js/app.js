@@ -61,7 +61,6 @@ angular.module('alltoez', ['ionic','ionic.service.core', 'ionic.service.analytic
         controller: 'EventsCtrl'
       }
     },
-    cache: false
   })
   .state('tab.event-detail', {
     url: '/events/:eventId',
